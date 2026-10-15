@@ -10,10 +10,7 @@
 namespace {
 constexpr uint8_t SDA_PIN = 21, SCL_PIN = 22, OLED_ADDRESS = 0x3C;
 constexpr uint8_t SERVO_PIN = 18, TRIG_PIN = 5, ECHO_PIN = 19;
-constexpr uint8_t BUZZER_PIN = 25, PET_PIN = 4;
-// Arduino-ESP32 2.x: channel 14 = low-speed group, timer 3.
-// ESP32Servo below is restricted to timer 0, independently of this timer.
-constexpr uint8_t BUZZER_CHANNEL = 14;
+constexpr uint8_t PET_PIN = 4; // TTP223 OUT: HIGH while touched, LOW when released.
 constexpr uint32_t FRAME_US = 16667, SENSOR_PERIOD_US = 80000;
 constexpr uint32_t ECHO_TIMEOUT_US = 30000, SLEEP_AFTER_MS = 10000;
 constexpr float PI_F = 3.14159265f;
@@ -21,16 +18,6 @@ constexpr size_t FRAME_BYTES = 128 * 64 / 8;
 
 enum class Mood : uint8_t { Idle, Happy, Angry, Love };
 enum class SonarPhase : uint8_t { Waiting, TriggerHigh, Listening };
-struct Note { uint16_t fromHz, toHz, durationMs; };
-const Note HAPPY_SONG[] = {
-    {659, 784, 95}, {988, 988, 95}, {1319, 1568, 140},
-    {0, 0, 65}, {1568, 1760, 85}, {1319, 1319, 160}};
-const Note ANGRY_SONG[] = {
-    {330, 165, 65}, {0, 0, 35}, {330, 165, 65},
-    {0, 0, 35}, {440, 220, 65}, {0, 0, 100}};
-const Note LOVE_SONG[] = {
-    {196, 262, 90}, {262, 196, 90}, {196, 294, 90},
-    {0, 0, 50}, {523, 1047, 130}, {784, 1175, 140}};
 
 Adafruit_SSD1306 display(128, 64, &Wire, -1, 400000, 400000);
 Servo neck;
@@ -45,8 +32,8 @@ uint32_t nextFrameUs = 0, previousFrameUs = 0, lastServoMs = 0;
 uint32_t blinkStartedMs = 0, nextBlinkMs = 0;
 bool blinking = false;
 
-// Debounced active-low button; releasing it leaves a short affectionate afterglow.
-bool rawPet = false, petHeld = false, petWasPressed = false;
+// Filter the active-high touch signal; release leaves a short affectionate afterglow.
+bool rawPet = false, petHeld = false, petWasTouched = false;
 uint32_t petEdgeMs = 0, lastPetMs = 0;
 
 SonarPhase sonarPhase = SonarPhase::Waiting;
@@ -54,12 +41,6 @@ uint32_t lastTriggerUs = 0, triggerStartedUs = 0, listeningStartedUs = 0;
 portMUX_TYPE echoMux = portMUX_INITIALIZER_UNLOCKED;
 volatile bool echoArmed = false, echoRose = false, echoReady = false;
 volatile uint32_t echoRiseUs = 0, echoDurationUs = 0;
-
-const Note *song = nullptr;
-size_t songLength = 0, noteIndex = 0;
-bool songPlaying = false;
-uint32_t noteStartedMs = 0, songEndedMs = 0, lastToneMs = 0;
-uint16_t appliedHz = 0;
 
 // Immutable in-flight image + last confirmed OLED contents. No frame is modified
 // during transmission. New procedural frames may supersede unsent frames.
@@ -153,71 +134,22 @@ bool serviceSonar(uint32_t nowUs, uint32_t nowMs) {
 }
 
 void servicePet(uint32_t now) {
-  const bool pressed = digitalRead(PET_PIN) == LOW;
-  if (pressed != rawPet) {
-    rawPet = pressed;
+  const bool touched = digitalRead(PET_PIN) == HIGH;
+  if (touched != rawPet) {
+    rawPet = touched;
     petEdgeMs = now;
   }
   if (static_cast<uint32_t>(now - petEdgeMs) >= 25) petHeld = rawPet;
   if (petHeld) {
-    petWasPressed = true;
+    petWasTouched = true;
     lastPetMs = now;
     lastInteractionMs = now;
   }
 }
 
-void setTone(uint16_t hz) {
-  if (hz == appliedHz) return;
-  if (hz == 0) ledcWrite(BUZZER_CHANNEL, 0);
-  else ledcWriteTone(BUZZER_CHANNEL, hz);
-  appliedHz = hz;
-}
-
-void selectSong(uint32_t now) {
-  setTone(0);
-  song = nullptr;
-  songLength = 0;
-  switch (mood) {
-    case Mood::Happy: song = HAPPY_SONG; songLength = sizeof(HAPPY_SONG) / sizeof(Note); break;
-    case Mood::Angry: song = ANGRY_SONG; songLength = sizeof(ANGRY_SONG) / sizeof(Note); break;
-    case Mood::Love: song = LOVE_SONG; songLength = sizeof(LOVE_SONG) / sizeof(Note); break;
-    case Mood::Idle: break;
-  }
-  songPlaying = song != nullptr;
-  noteIndex = 0;
-  noteStartedMs = now;
-  lastToneMs = now - 8;
-}
-
-void serviceSound(uint32_t now) {
-  if (!song) return;
-  if (!songPlaying) {
-    const uint32_t pause = mood == Mood::Angry ? 150 : mood == Mood::Love ? 900 : 3000;
-    if (static_cast<uint32_t>(now - songEndedMs) < pause) return;
-    songPlaying = true;
-    noteIndex = 0;
-    noteStartedMs = now;
-  }
-  if (static_cast<uint32_t>(now - noteStartedMs) >= song[noteIndex].durationMs) {
-    noteStartedMs = now;
-    if (++noteIndex == songLength) {
-      songPlaying = false;
-      songEndedMs = now;
-      setTone(0);
-      return;
-    }
-  }
-  if (static_cast<uint32_t>(now - lastToneMs) >= 8) {
-    lastToneMs = now;
-    const Note &note = song[noteIndex];
-    const float t = static_cast<float>(now - noteStartedMs) / note.durationMs;
-    setTone(static_cast<uint16_t>(note.fromHz + (note.toHz - note.fromHz) * t));
-  }
-}
-
 void updateMood(uint32_t now) {
   Mood next = Mood::Idle;
-  if (petHeld || (petWasPressed && static_cast<uint32_t>(now - lastPetMs) < 1200)) {
+  if (petHeld || (petWasTouched && static_cast<uint32_t>(now - lastPetMs) < 1200)) {
     next = Mood::Love; // Petting always wins, even inside personal space.
   } else if (distanceCm >= 0 && distanceCm < 15) {
     next = Mood::Angry;
@@ -230,7 +162,6 @@ void updateMood(uint32_t now) {
     blinking = false;
     nextBlinkMs = now + 2000;
     moodChanged = true;
-    selectSong(now);
   }
   const bool nextSleeping = mood == Mood::Idle &&
       static_cast<uint32_t>(now - lastInteractionMs) >= SLEEP_AFTER_MS;
@@ -257,10 +188,6 @@ void drawEye(int16_t cx, int16_t cy, bool left, float openness, float seconds) {
   if (loveBlend > 0.55f) {
     const int16_t r = 9 + static_cast<int16_t>(1.2f * sinf(seconds * 7));
     drawHeart(cx, cy - 5, r);
-    // A dark recess makes the WHITE specular highlights visible on a 1-bit OLED.
-    display.fillCircle(cx - 7, cy - 11, 4, SSD1306_BLACK);
-    display.fillCircle(cx - 8, cy - 12, 2, SSD1306_WHITE);
-    display.drawPixel(cx - 4, cy - 9, SSD1306_WHITE);
     return;
   }
   const int16_t w = 34 + static_cast<int16_t>(2 * happyBlend);
@@ -281,16 +208,6 @@ void drawEye(int16_t cx, int16_t cy, bool left, float openness, float seconds) {
       display.fillTriangle(x - 1, y - 1, x + w, y - 1,
                            x - 1, y + slope, SSD1306_BLACK);
     }
-  }
-  // Keep white glints, including a tiny glint on the closed eyelid during blinks.
-  const int16_t hx = x + 7 + (left ? 0 : static_cast<int16_t>((w - 15) * angryBlend));
-  const int16_t hy = h > 10 ? y + 7 : cy;
-  if (h > 10) {
-    display.fillCircle(hx, hy, 4, SSD1306_BLACK);
-    display.fillCircle(hx - 1, hy - 1, 2, SSD1306_WHITE);
-    display.drawPixel(hx + 3, hy + 2, SSD1306_WHITE);
-  } else {
-    display.drawPixel(hx, hy, SSD1306_WHITE);
   }
 }
 
@@ -399,7 +316,7 @@ void serviceDisplay() {
       displayErrors = 0;
     } else if (++displayErrors >= 3) {
       displayReady = false;
-      Serial.println(F("OLED I2C failed; sensor, button, sound and servo continue."));
+      Serial.println(F("OLED I2C failed; distance, touch and servo continue."));
     }
     scanPage = (page + 1) % 8;
     return;
@@ -440,7 +357,7 @@ void serviceLog(uint32_t now) {
   else snprintf(cm, sizeof(cm), "%.1f cm", distanceCm);
   snprintf(message, sizeof(message),
       "Distance=%s | %s | Pet=%s | Servo=%d | FPS draw=%.1f OLED=%.1f | skipped=%lu",
-      cm, name, petHeld ? "held" : "off", static_cast<int>(lroundf(neckAngle)),
+      cm, name, petHeld ? "touched" : "off", static_cast<int>(lroundf(neckAngle)),
       renderFps, presentFps, static_cast<unsigned long>(skippedCount));
   if (Serial.availableForWrite() >= static_cast<int>(strlen(message) + 2)) {
     Serial.println(message);
@@ -456,7 +373,7 @@ void setup() {
   pinMode(TRIG_PIN, OUTPUT);
   digitalWrite(TRIG_PIN, LOW);
   pinMode(ECHO_PIN, INPUT);
-  pinMode(PET_PIN, INPUT_PULLUP);
+  pinMode(PET_PIN, INPUT_PULLDOWN);
   attachInterrupt(digitalPinToInterrupt(ECHO_PIN), echoEdge, CHANGE);
   randomSeed(esp_random());
 
@@ -478,9 +395,6 @@ void setup() {
   neck.attach(SERVO_PIN, 500, 2500);
   neck.write(90);
   if (!neck.attached()) Serial.println(F("ERROR: servo attachment failed."));
-  ledcSetup(BUZZER_CHANNEL, 2000, 10);
-  ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);
-  ledcWrite(BUZZER_CHANNEL, 0);
 
   const uint32_t now = millis();
   lastInteractionMs = moodStartedMs = lastServoMs = statsStartedMs = now;
@@ -488,7 +402,7 @@ void setup() {
   previousFrameUs = micros();
   nextFrameUs = previousFrameUs;
   lastTriggerUs = previousFrameUs; // Let the sensor settle for 80 ms.
-  Serial.println(F("Desk Companion Bot: 60 Hz procedural eyes, 4 moods, pet GPIO4, sound GPIO25."));
+  Serial.println(F("Desk Companion Bot: 60 Hz solid eyes, 4 moods, TTP223 touch GPIO4."));
 }
 
 void loop() {
@@ -497,7 +411,6 @@ void loop() {
   if (serviceSonar(nowUs, nowMs)) return;
   servicePet(nowMs);
   updateMood(nowMs);
-  serviceSound(nowMs);
   serviceNeck(nowMs);
   if (due(nowUs, nextFrameUs)) {
     const float dt = min(0.1f, (nowUs - previousFrameUs) * 0.000001f);

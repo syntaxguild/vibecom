@@ -7,8 +7,8 @@
     { "type": "board-ssd1306", "id": "oled", "top": -70, "left": 0, "attrs": { "i2cAddress": "0x3c" } },
     { "type": "wokwi-hc-sr04", "id": "distance", "top": 70, "left": 360, "attrs": { "distance": "100" } },
     { "type": "wokwi-servo", "id": "neck", "top": 330, "left": 360, "attrs": { "horn": "double" } },
-    { "type": "wokwi-buzzer", "id": "voice", "top": 180, "left": -230, "attrs": { "volume": "0.2" } },
-    { "type": "wokwi-pushbutton", "id": "pet", "top": 400, "left": 40, "attrs": { "color": "blue", "label": "PET ME", "key": "P", "bounce": "1" } }
+    { "type": "wokwi-slide-switch", "id": "pet", "top": 400, "left": 40, "attrs": { "value": "", "bounce": "0" } },
+    { "type": "wokwi-text", "id": "petLabel", "top": 450, "left": -50, "attrs": { "text": "TTP223 OUT (simulation)\nLeft: release | Right: touch" } }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
@@ -24,10 +24,9 @@
     [ "distance:VCC", "neck:V+", "red", [ "v80", "h-140", "*", "h-60" ] ],
     [ "neck:GND", "esp:GND.3", "black", [ "h-40", "*", "h220" ] ],
     [ "distance:GND", "esp:GND.2", "black", [ "v20", "h90", "v-180", "*", "h360", "v-170", "h140" ] ],
-    [ "voice:2", "esp:25", "cyan", [ "v30", "*", "h-90" ] ],
-    [ "voice:1", "esp:GND.1", "black", [ "v50", "*", "h-140" ] ],
-    [ "pet:1.l", "esp:4", "magenta", [ "h-30", "v-35", "h180", "*", "h100" ] ],
-    [ "pet:2.l", "esp:GND.1", "black", [ "h-110", "*", "h-90" ] ]
+    [ "pet:2", "esp:4", "magenta", [ "h-30", "v-35", "h180", "*", "h100" ] ],
+    [ "pet:1", "esp:GND.1", "black", [ "h-110", "*", "h-90" ] ],
+    [ "pet:3", "esp:3V3", "red", [ "h-50", "v-50", "*", "h-47" ] ]
   ],
   "serialMonitor": { "display": "always", "newline": "lf" },
   "dependencies": {}

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="180" viewBox="0 0 720 180" role="img" aria-labelledby="title desc">
+  <title id="title">Desk Companion Bot: solid eyes</title>
+  <desc id="desc">Illustrations of idle, happy, angry and love eyes without circular highlights or pupils.</desc>
+  <rect width="720" height="180" fill="#141414"/>
+  <g fill="#fff" font-family="monospace" font-size="13" text-anchor="middle">
+    <text x="96" y="35">IDLE</text>
+    <text x="272" y="35">HAPPY</text>
+    <text x="448" y="35">ANGRY</text>
+    <text x="624" y="35">LOVE / TOUCH</text>
+  </g>
+  <g transform="translate(16 55) scale(1.25)">
+    <rect width="128" height="64" rx="4"/>
+    <g fill="#fff">
+      <rect x="22" y="16" width="34" height="34" rx="12"/>
+      <rect x="72" y="16" width="34" height="34" rx="12"/>
+      <path d="M60 52 Q64 57 68 52" fill="none" stroke="#fff"/>
+    </g>
+  </g>
+  <g transform="translate(192 55) scale(1.25)">
+    <rect width="128" height="64" rx="4"/>
+    <g fill="#fff">
+      <rect x="21" y="16" width="36" height="34" rx="12"/>
+      <rect x="71" y="16" width="36" height="34" rx="12"/>
+    </g>
+    <g fill="#000">
+      <circle cx="39" cy="44" r="22"/>
+      <circle cx="89" cy="44" r="22"/>
+    </g>
+    <path d="M60 52 Q64 57 68 52 M115 27H121 M118 24V30" fill="none" stroke="#fff"/>
+  </g>
+  <g transform="translate(368 55) scale(1.25)">
+    <rect width="128" height="64" rx="4"/>
+    <g fill="#fff">
+      <rect x="22" y="16" width="34" height="34" rx="12"/>
+      <rect x="72" y="16" width="34" height="34" rx="12"/>
+      <rect x="60" y="54" width="8" height="3" rx="1"/>
+    </g>
+    <path d="M21 15H56V31Z M71 15H106L71 31Z"/>
+    <path d="M113 13L118 18 M118 13L113 18" stroke="#fff"/>
+  </g>
+  <g transform="translate(544 55) scale(1.25)">
+    <rect width="128" height="64" rx="4"/>
+    <g fill="#fff">
+      <circle cx="33" cy="25" r="9"/>
+      <circle cx="45" cy="25" r="9"/>
+      <path d="M24 28H54L39 46Z"/>
+      <circle cx="83" cy="25" r="9"/>
+      <circle cx="95" cy="25" r="9"/>
+      <path d="M74 28H104L89 46Z"/>
+    </g>
+    <path d="M60 52 Q64 57 68 52 M115 27H121 M118 24V30" fill="none" stroke="#fff"/>
+  </g>
+  <text x="360" y="161" fill="#aaa" font-family="monospace" font-size="11" text-anchor="middle">Shape illustrations · animated on the 128 × 64 OLED</text>
+</svg>
