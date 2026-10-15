@@ -17,10 +17,12 @@ constexpr uint8_t TFT_SCLK = 14, TFT_MOSI = 23, TFT_DC = 26, TFT_RST = 33;
 constexpr uint32_t TFT_SPI_HZ = 40000000; // Reduce to 20000000 for long/noisy wires.
 #ifdef WOKWI_ILI9341
 constexpr int8_t TFT_CS = 27;
-constexpr int16_t FACE_TOP = 80; // Center the same 240x160 face on the simulator's 240x320 LCD.
+constexpr uint8_t TFT_ROTATION = 1;
+constexpr int16_t FACE_LEFT = 40, FACE_TOP = 40; // Center the face on the landscape 320x240 LCD.
 #else
 constexpr int8_t TFT_CS = -1; // The 7-pin ST7789 module has no exposed CS.
-constexpr int16_t FACE_TOP = 40;
+constexpr uint8_t TFT_ROTATION = 0;
+constexpr int16_t FACE_LEFT = 0, FACE_TOP = 40;
 constexpr uint8_t TFT_SPI_MODE = SPI_MODE0;
 constexpr bool TFT_INVERT = true;
 #endif
@@ -252,7 +254,7 @@ void serviceDisplay() {
     const uint32_t startedUs = micros();
     expandFaceBand(*sendingFrame, sendRow, transferPixels);
     display.startWrite();
-    display.setAddrWindow(0, FACE_TOP + sendRow, FACE_WIDTH, FACE_BAND_ROWS);
+    display.setAddrWindow(FACE_LEFT, FACE_TOP + sendRow, FACE_WIDTH, FACE_BAND_ROWS);
     display.writePixels(transferPixels, FACE_BAND_ROWS * FACE_WIDTH);
     display.endWrite();
     maxTransferUs = max(maxTransferUs, static_cast<uint32_t>(micros() - startedUs));
@@ -328,7 +330,7 @@ void setup() {
   display.setSPISpeed(TFT_SPI_HZ);
   display.invertDisplay(TFT_INVERT);
 #endif
-  display.setRotation(0);
+  display.setRotation(TFT_ROTATION);
   display.fillScreen(0); // Clear once, before sonar is armed.
   displayReady = true;
   Serial.printf("Display=READY | static indexed frames=76800 bytes | free heap=%u\n", ESP.getFreeHeap());
