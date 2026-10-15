@@ -185,18 +185,18 @@ void drawSparkle(int16_t x, int16_t y, int16_t r) {
 }
 
 void drawEye(int16_t cx, int16_t cy, bool left, float openness, float seconds) {
-  if (loveBlend > 0.55f) {
-    const int16_t r = 9 + static_cast<int16_t>(1.2f * sinf(seconds * 7));
-    drawHeart(cx, cy - 5, r);
-    return;
-  }
-  const int16_t w = 34 + static_cast<int16_t>(2 * happyBlend);
-  const int16_t h = max(3, static_cast<int>(34 * (1 - 0.55f * sleepBlend) * openness));
+  // Petting relaxes the same capsule eyes into a soft smile, without a shape swap.
+  const float smile = max(happyBlend, 0.82f * loveBlend);
+  const float relaxed = loveBlend * (0.18f + 0.03f * sinf(seconds * 1.8f));
+  const int16_t w = 34 + static_cast<int16_t>(2 * smile);
+  const int16_t h = max(3, static_cast<int>(
+      34 * (1 - 0.55f * sleepBlend) * (1 - relaxed) * openness));
   const int16_t x = cx - w / 2, y = cy - h / 2;
   display.fillRoundRect(x, y, w, h, min(12, h / 2), SSD1306_WHITE);
-  if (happyBlend > 0.02f && h > 8) {
+  if (smile > 0.02f && h > 8) {
     // Carve the lower lid out of a solid capsule, morphing into a smiling arch.
-    display.fillCircle(cx, cy + 36 - static_cast<int16_t>(25 * happyBlend),
+    // Relax the lower lid during blinks so the shrinking eye cannot be cut away.
+    display.fillCircle(cx, cy + 36 - static_cast<int16_t>(25 * smile * openness),
                        22, SSD1306_BLACK);
   }
   if (angryBlend > 0.02f && h > 8) {
@@ -214,7 +214,9 @@ void drawEye(int16_t cx, int16_t cy, bool left, float openness, float seconds) {
 void renderFace(uint32_t nowMs, float dt) {
   happyBlend = approach(happyBlend, mood == Mood::Happy ? 1 : 0, 12, dt);
   angryBlend = approach(angryBlend, mood == Mood::Angry ? 1 : 0, 16, dt);
-  loveBlend = approach(loveBlend, mood == Mood::Love ? 1 : 0, 12, dt);
+  // Ease into affection, then let it fade more slowly after the afterglow.
+  loveBlend = approach(loveBlend, mood == Mood::Love ? 1 : 0,
+                       mood == Mood::Love ? 4.0f : 2.4f, dt);
   sleepBlend = approach(sleepBlend, sleeping ? 1 : 0, 3, dt);
   if (due(nowMs, nextGazeMs)) {
     gazeTargetX = random(-7, 8);
@@ -242,28 +244,33 @@ void renderFace(uint32_t nowMs, float dt) {
   const float seconds = nowMs * 0.001f;
   const int16_t shakeX = lroundf(1.5f * angryBlend * sinf(seconds * 113));
   const int16_t shakeY = lroundf(angryBlend * sinf(seconds * 89));
-  const int16_t offsetX = lroundf(gazeX) + shakeX;
+  const int16_t petSway = lroundf(1.5f * loveBlend * sinf(seconds * 2.1f));
+  const int16_t petTilt = lroundf(1.2f * loveBlend * sinf(seconds * 2.1f));
+  const int16_t petLift = lroundf(loveBlend * (-1.5f + 0.5f * sinf(seconds * 1.8f)));
+  const int16_t offsetX = lroundf(gazeX) + shakeX + petSway;
   const int16_t centerY = 33 + lroundf(gazeY + sinf(seconds * 2) +
-      1.5f * happyBlend * sinf(seconds * 9)) + shakeY;
+      1.5f * happyBlend * sinf(seconds * 9)) + shakeY + petLift;
   if (!displayReady) return;
   display.clearDisplay();
-  drawEye(39 + offsetX, centerY, true, openness, seconds);
-  drawEye(89 + offsetX, centerY, false, openness, seconds);
+  drawEye(39 + offsetX, centerY - petTilt, true, openness, seconds);
+  drawEye(89 + offsetX, centerY + petTilt, false, openness, seconds);
   // A small smile; accent marks sit outside the eyes rather than obscuring them.
   if (angryBlend < 0.5f) {
-    display.fillCircle(64, 52, 4, SSD1306_WHITE);
-    display.fillCircle(64, 50, 4, SSD1306_BLACK);
+    display.fillCircle(64 + petSway, 52 + petLift, 4, SSD1306_WHITE);
+    display.fillCircle(64 + petSway, 50 + petLift, 4, SSD1306_BLACK);
   } else {
     display.fillRoundRect(60 + shakeX, 54, 8, 3, 1, SSD1306_WHITE);
     display.drawLine(113, 13, 118, 18, SSD1306_WHITE);
     display.drawLine(118, 13, 113, 18, SSD1306_WHITE);
   }
   if (happyBlend > 0.3f || loveBlend > 0.3f) {
-    const int16_t floatY = lroundf(2 * sinf(seconds * 4));
+    const int16_t floatY = lroundf(2 * ((1 - loveBlend) * sinf(seconds * 4) +
+                                       loveBlend * sinf(seconds * 1.8f)));
     drawHeart(10, 42 + floatY, 3);
-    drawSparkle(118, 27 - floatY, 3 + (static_cast<int>(seconds * 4) & 1));
-    display.drawLine(16, 49, 19, 47, SSD1306_WHITE);
-    display.drawLine(109, 47, 112, 49, SSD1306_WHITE);
+    const int16_t sparklePulse = lroundf((1 - loveBlend) * (static_cast<int>(seconds * 4) & 1));
+    drawSparkle(118, 27 - floatY, 3 + sparklePulse);
+    display.drawLine(16 + petSway, 49 + petLift, 19 + petSway, 47 + petLift, SSD1306_WHITE);
+    display.drawLine(109 + petSway, 47 + petLift, 112 + petSway, 49 + petLift, SSD1306_WHITE);
   }
   if (sleepBlend > 0.3f) {
     display.setTextSize(1);
@@ -335,9 +342,12 @@ void serviceNeck(uint32_t now) {
     case Mood::Idle: target += sleeping ? 0 : gazeX; break;
     case Mood::Happy: target += 38 * sinf(phase * 5.5f); break;
     case Mood::Angry: target = 180; break;
-    case Mood::Love: target += 7 * sinf(phase * 8); break;
+    case Mood::Love: break; // The affection blend below also eases the release.
   }
-  neckAngle = approach(neckAngle, target, mood == Mood::Angry ? 8 : 12, dt);
+  const float petTarget = 98 + 3 * sinf(now * 0.0021f);
+  target += (petTarget - target) * loveBlend;
+  const float rate = mood == Mood::Love ? 3.5f : mood == Mood::Angry ? 8 : 12;
+  neckAngle = approach(neckAngle, target, rate, dt);
   neck.write(constrain(static_cast<int>(lroundf(neckAngle)), 0, 180));
 }
 
