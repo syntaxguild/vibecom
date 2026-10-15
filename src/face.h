@@ -6,17 +6,47 @@
 enum class Mood : uint8_t { Idle, Happy, Angry, Love };
 constexpr int16_t FACE_WIDTH = 240, FACE_HEIGHT = 160;
 constexpr uint8_t FACE_BAND_ROWS = 8;
+constexpr uint8_t FACE_PALETTE_SIZE = 5;
 static_assert(FACE_HEIGHT % FACE_BAND_ROWS == 0 && FACE_HEIGHT / FACE_BAND_ROWS <= 32,
               "Changed face bands must fit a uint32_t mask");
 
-inline uint32_t changedFaceBands(const GFXcanvas16 &next, const GFXcanvas16 &previous) {
+// The face uses five simultaneous colors. Store indices, preserving exact RGB565
+// colors in a per-frame palette. No heap allocation, including before setup().
+class FaceCanvas : public GFXcanvas8 {
+public:
+  FaceCanvas() : GFXcanvas8(FACE_WIDTH, FACE_HEIGHT, false) { buffer = pixels; }
+  uint16_t palette[FACE_PALETTE_SIZE] = {};
+private:
+  uint8_t pixels[FACE_WIDTH * FACE_HEIGHT] = {};
+};
+
+inline uint32_t changedFaceBands(const FaceCanvas &next, const FaceCanvas &previous) {
   uint32_t changed = 0;
   constexpr size_t pixels = FACE_WIDTH * FACE_BAND_ROWS;
+  const bool paletteChanged = memcmp(next.palette, previous.palette, sizeof(next.palette)) != 0;
   for (uint8_t band = 0; band < FACE_HEIGHT / FACE_BAND_ROWS; ++band) {
     if (memcmp(next.getBuffer() + band * pixels, previous.getBuffer() + band * pixels,
-               pixels * sizeof(uint16_t)) != 0) changed |= 1UL << band;
+               pixels) != 0) {
+      changed |= 1UL << band;
+    } else if (paletteChanged) {
+      // Identical indices may still change color during an emotion transition.
+      for (size_t i = band * pixels; i < (band + 1) * pixels; ++i) {
+        const uint8_t index = next.getBuffer()[i];
+        if (next.palette[index] != previous.palette[index]) {
+          changed |= 1UL << band;
+          break;
+        }
+      }
+    }
   }
   return changed;
+}
+
+inline void expandFaceBand(const FaceCanvas &canvas, uint16_t row, uint16_t *output) {
+  const uint8_t *indices = canvas.getBuffer() + row * FACE_WIDTH;
+  for (size_t i = 0; i < FACE_WIDTH * FACE_BAND_ROWS; ++i) {
+    output[i] = canvas.palette[indices[i]];
+  }
 }
 
 struct FaceState {
@@ -36,7 +66,7 @@ inline uint16_t mixColor(uint16_t a, uint16_t b, float amount) {
           static_cast<int>(ab + (bb - ab) * amount);
 }
 
-inline void drawHeart(GFXcanvas16 &canvas, int16_t x, int16_t y, int16_t r,
+inline void drawHeart(FaceCanvas &canvas, int16_t x, int16_t y, int16_t r,
                       uint16_t color) {
   const int16_t offset = r * 2 / 3;
   canvas.fillCircle(x - offset, y - r / 3, r, color);
@@ -44,7 +74,7 @@ inline void drawHeart(GFXcanvas16 &canvas, int16_t x, int16_t y, int16_t r,
   canvas.fillTriangle(x - r - offset, y, x + r + offset, y, x, y + r * 2, color);
 }
 
-inline void drawSparkle(GFXcanvas16 &canvas, int16_t x, int16_t y, int16_t r,
+inline void drawSparkle(FaceCanvas &canvas, int16_t x, int16_t y, int16_t r,
                         uint16_t color) {
   canvas.fillTriangle(x, y - r, x - 2, y, x + 2, y, color);
   canvas.fillTriangle(x, y + r, x - 2, y, x + 2, y, color);
@@ -52,14 +82,14 @@ inline void drawSparkle(GFXcanvas16 &canvas, int16_t x, int16_t y, int16_t r,
   canvas.fillTriangle(x + r, y, x, y - 2, x, y + 2, color);
 }
 
-inline void drawEye(GFXcanvas16 &canvas, int16_t cx, int16_t cy, bool left,
+inline void drawEye(FaceCanvas &canvas, int16_t cx, int16_t cy, bool left,
                     float smile, float anger, float relaxed, float sleep,
                     float openness, uint16_t color) {
   const int16_t w = 62 + static_cast<int16_t>(4 * smile);
   const int16_t h = max(5, static_cast<int>(
       64 * (1 - 0.5f * sleep) * (1 - relaxed) * openness));
   const int16_t x = cx - w / 2, y = cy - h / 2;
-  canvas.fillRoundRect(x, y, w, h, min(20, h / 2), mixColor(0, color, 0.45f));
+  canvas.fillRoundRect(x, y, w, h, min(20, h / 2), 2); // Dim rim, palette index 2.
   canvas.fillRoundRect(x + 2, y + 1, w - 4, max(3, h - 2), min(18, h / 2), color);
   if (smile > 0.02f && h > 12) {
     // The lower lid relaxes during blinks, preserving a visible closing eyelid.
@@ -75,7 +105,7 @@ inline void drawEye(GFXcanvas16 &canvas, int16_t cx, int16_t cy, bool left,
   }
 }
 
-inline void drawFace(GFXcanvas16 &canvas, const FaceState &face, float seconds) {
+inline void drawFace(FaceCanvas &canvas, const FaceState &face, float seconds) {
   // The actual mood owns expression. A fading Happy/Love must NEVER smile in Angry.
   const bool angry = face.mood == Mood::Angry ||
       (face.mood != Mood::Love && face.angry > 0.02f);
@@ -89,6 +119,13 @@ inline void drawFace(GFXcanvas16 &canvas, const FaceState &face, float seconds) 
   color = mixColor(color, rgb(255, 173, 202), love);
   color = mixColor(color, rgb(255, 99, 92), anger);
   color = mixColor(color, rgb(110, 122, 170), sleep);
+  const uint16_t blush = mixColor(rgb(255, 161, 95), rgb(255, 111, 157), love);
+  canvas.palette[0] = 0;
+  canvas.palette[1] = color;
+  canvas.palette[2] = mixColor(0, color, 0.45f);
+  canvas.palette[3] = blush;
+  canvas.palette[4] = mixColor(0, blush, 0.22f);
+  color = 1; // All following primitives draw palette indices, not RGB565 values.
 
   const int16_t shakeX = lroundf(2 * anger * sinf(seconds * 83));
   const int16_t shakeY = lroundf(anger * sinf(seconds * 67));
@@ -104,29 +141,22 @@ inline void drawFace(GFXcanvas16 &canvas, const FaceState &face, float seconds) 
   drawEye(canvas, 168 + offsetX, centerY + tilt, false, smile, anger, relaxed,
           sleep, face.openness, color);
 
-  const int16_t mouthX = 120 + sway + shakeX, mouthY = 120 + lift + shakeY;
+  // Eyes carry expression; leave the lower center clean instead of a cartoon mouth.
   if (angry) {
-    canvas.fillCircle(mouthX, mouthY + 8, 9, color);
-    canvas.fillCircle(mouthX, mouthY + 12, 9, 0); // Frown, including transition frames.
     canvas.drawLine(215, 23, 225, 33, color);
     canvas.drawLine(225, 23, 215, 33, color);
     canvas.drawLine(216, 23, 226, 33, color);
     canvas.drawLine(226, 23, 216, 33, color);
-  } else {
-    canvas.fillCircle(mouthX, mouthY, 8, color);
-    canvas.fillCircle(mouthX, mouthY - 4, 8, 0);
   }
   if (!angry && (happy > 0.3f || love > 0.3f)) {
-    const uint16_t blush = mixColor(rgb(255, 161, 95), rgb(255, 111, 157), love);
-    const uint16_t shadow = mixColor(0, blush, 0.22f);
-    canvas.fillRoundRect(28 + sway, 106 + lift, 25, 8, 4, shadow);
-    canvas.fillRoundRect(187 + sway, 106 + lift, 25, 8, 4, shadow);
+    canvas.fillRoundRect(28 + sway, 106 + lift, 25, 8, 4, 4);
+    canvas.fillRoundRect(187 + sway, 106 + lift, 25, 8, 4, 4);
     for (int16_t x : {34, 41, 193, 200}) {
-      canvas.drawLine(x + sway, 112 + lift, x + 4 + sway, 107 + lift, blush);
+      canvas.drawLine(x + sway, 112 + lift, x + 4 + sway, 107 + lift, 3);
     }
     const int16_t floatY = lroundf(3 * ((1 - love) * sinf(seconds * 4) +
                                        love * sinf(seconds * 1.8f)));
-    drawHeart(canvas, 18, 88 + floatY, 4, blush);
+    drawHeart(canvas, 18, 88 + floatY, 4, 3);
     drawSparkle(canvas, 222, 76 - floatY, 6, color);
   }
   if (sleep > 0.3f) {

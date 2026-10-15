@@ -38,8 +38,9 @@ Adafruit_ILI9341 display(&displaySPI, TFT_DC, TFT_CS, TFT_RST);
 #else
 Adafruit_ST7789 display(&displaySPI, TFT_CS, TFT_DC, TFT_RST);
 #endif
-GFXcanvas16 frameA(FACE_WIDTH, FACE_HEIGHT), frameB(FACE_WIDTH, FACE_HEIGHT);
-GFXcanvas16 *drawingFrame = &frameA, *sendingFrame = &frameB;
+FaceCanvas frameA, frameB;
+FaceCanvas *drawingFrame = &frameA, *sendingFrame = &frameB;
+uint16_t transferPixels[FACE_WIDTH * FACE_BAND_ROWS] = {};
 Servo neck;
 Mood mood = Mood::Idle;
 bool displayReady = false, sleeping = false, moodChanged = true;
@@ -62,8 +63,8 @@ portMUX_TYPE echoMux = portMUX_INITIALIZER_UNLOCKED;
 volatile bool echoArmed = false, echoRose = false, echoReady = false;
 volatile uint32_t echoRiseUs = 0, echoDurationUs = 0;
 
-// Render into one RGB565 canvas while the other is sent unchanged in short bands.
-// No clear-and-redraw on the physical panel, and no PSRAM required.
+// Statically backed indexed canvases: no large heap allocations before setup().
+// The palette stays with its immutable frame until all changed bands are sent.
 bool framePending = false;
 uint16_t sendRow = 0;
 uint32_t dirtyBands = 0;
@@ -237,7 +238,7 @@ void serviceDisplay() {
     skippedCount += renderedGeneration - queuedGeneration - 1;
     // Compare before recycling the previous displayed canvas for new rendering.
     dirtyBands = changedFaceBands(*drawingFrame, *sendingFrame);
-    GFXcanvas16 *available = sendingFrame;
+    FaceCanvas *available = sendingFrame;
     sendingFrame = drawingFrame;
     drawingFrame = available;
     queuedGeneration = renderedGeneration;
@@ -249,10 +250,10 @@ void serviceDisplay() {
   }
   if (sendRow < FACE_HEIGHT) {
     const uint32_t startedUs = micros();
+    expandFaceBand(*sendingFrame, sendRow, transferPixels);
     display.startWrite();
     display.setAddrWindow(0, FACE_TOP + sendRow, FACE_WIDTH, FACE_BAND_ROWS);
-    display.writePixels(sendingFrame->getBuffer() + sendRow * FACE_WIDTH,
-                        FACE_BAND_ROWS * FACE_WIDTH);
+    display.writePixels(transferPixels, FACE_BAND_ROWS * FACE_WIDTH);
     display.endWrite();
     maxTransferUs = max(maxTransferUs, static_cast<uint32_t>(micros() - startedUs));
     sendRow += FACE_BAND_ROWS;
@@ -318,23 +319,19 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(ECHO_PIN), echoEdge, CHANGE);
   randomSeed(esp_random());
 
-  displayReady = frameA.getBuffer() && frameB.getBuffer();
-  if (displayReady) {
-    displaySPI.begin(TFT_SCLK, -1, TFT_MOSI, TFT_CS);
+  displaySPI.begin(TFT_SCLK, -1, TFT_MOSI, TFT_CS);
 #ifdef WOKWI_ILI9341
-    display.begin(TFT_SPI_HZ);
-    display.invertDisplay(false);
+  display.begin(TFT_SPI_HZ);
+  display.invertDisplay(false);
 #else
-    display.init(240, 240, TFT_SPI_MODE);
-    display.setSPISpeed(TFT_SPI_HZ);
-    display.invertDisplay(TFT_INVERT);
+  display.init(240, 240, TFT_SPI_MODE);
+  display.setSPISpeed(TFT_SPI_HZ);
+  display.invertDisplay(TFT_INVERT);
 #endif
-    display.setRotation(0);
-    display.fillScreen(0); // Clear once, before sonar is armed.
-  } else {
-    Serial.println(F("ERROR: RGB565 canvas allocation failed; distance, touch and servo continue."));
-  }
-  Serial.printf("Display buffers: 153600 bytes | free heap=%u\n", ESP.getFreeHeap());
+  display.setRotation(0);
+  display.fillScreen(0); // Clear once, before sonar is armed.
+  displayReady = true;
+  Serial.printf("Display=READY | static indexed frames=76800 bytes | free heap=%u\n", ESP.getFreeHeap());
 
   ESP32PWM::allocateTimer(0);
   neck.setPeriodHertz(50);

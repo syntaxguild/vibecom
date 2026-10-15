@@ -4,13 +4,13 @@
 #include <string.h>
 #include <string>
 
-void saveFrame(GFXcanvas16 &canvas, const std::string &path) {
+void saveFrame(FaceCanvas &canvas, const std::string &path) {
   FILE *file = fopen(path.c_str(), "wb");
   assert(file);
   fprintf(file, "P6\n240 240\n255\n");
   for (int y = 0; y < 240; ++y) {
     for (int x = 0; x < 240; ++x) {
-      const uint16_t color = y >= 40 && y < 200 ? canvas.getPixel(x, y - 40) : 0;
+      const uint16_t color = y >= 40 && y < 200 ? canvas.palette[canvas.getPixel(x, y - 40)] : 0;
       const unsigned char pixel[] = {
           static_cast<unsigned char>(((color >> 11) & 31) * 255 / 31),
           static_cast<unsigned char>(((color >> 5) & 63) * 255 / 63),
@@ -22,8 +22,12 @@ void saveFrame(GFXcanvas16 &canvas, const std::string &path) {
 }
 
 int main(int argc, char **argv) {
-  GFXcanvas16 clean(FACE_WIDTH, FACE_HEIGHT), stale(FACE_WIDTH, FACE_HEIGHT);
+  FaceCanvas clean, stale;
   assert(clean.getBuffer() && stale.getBuffer());
+  // Storage must live inside the canvas object, never in a fallible malloc block.
+  const uintptr_t pixels = reinterpret_cast<uintptr_t>(clean.getBuffer());
+  const uintptr_t object = reinterpret_cast<uintptr_t>(&clean);
+  assert(pixels >= object && pixels + FACE_WIDTH * FACE_HEIGHT <= object + sizeof(clean));
   assert(changedFaceBands(clean, stale) == 0);
   clean.drawPixel(0, 0, 1);
   clean.drawPixel(239, 159, 1);
@@ -33,6 +37,15 @@ int main(int argc, char **argv) {
   assert(changedFaceBands(clean, stale) == 0);
   clean.drawPixel(0, 8, 1);
   assert(changedFaceBands(clean, stale) == (1UL << 1));
+  stale.drawPixel(0, 8, 1);
+  clean.palette[1] = rgb(115, 228, 227);
+  assert(changedFaceBands(clean, stale) == ((1UL << 19) | (1UL << 1) | 1));
+  stale.palette[1] = clean.palette[1];
+  clean.palette[4] = rgb(255, 0, 0); // Unused colors must not dirty black bands.
+  assert(changedFaceBands(clean, stale) == 0);
+  uint16_t band[FACE_WIDTH * FACE_BAND_ROWS];
+  expandFaceBand(clean, 8, band);
+  assert(band[0] == clean.palette[1] && band[1] == 0);
   // Incoming Angry must render identically even if Happy/Love/Sleep blends linger.
   // Sweep entry, the old 0.5 mouth threshold, steady anger, and the entire blink.
   for (float anger : {0.0f, 0.03f, 0.49f, 0.51f, 1.0f}) {
@@ -42,21 +55,21 @@ int main(int argc, char **argv) {
       drawFace(clean, face, frame * 0.031f);
       face.happy = face.love = face.sleep = 1;
       drawFace(stale, face, frame * 0.031f);
-      assert(memcmp(clean.getBuffer(), stale.getBuffer(), FACE_WIDTH * FACE_HEIGHT * 2) == 0);
+      assert(changedFaceBands(clean, stale) == 0);
       int visible = 0;
       for (int y = 20; y < 110; ++y)
         for (int x = 35; x < 110; ++x) visible += clean.getPixel(x, y) != 0;
       assert(visible > 0); // Angry eyelid must not disappear during a blink.
     }
   }
-  FaceState face = {Mood::Angry, 1, 0, 1, 0, 0, 0, 1};
-  drawFace(clean, face, 0);
-  assert(clean.getPixel(120, 120) != 0); // Upper crescent: frown.
-  assert(clean.getPixel(120, 127) == 0); // Never the lower crescent smile.
-  face = {Mood::Idle, 0, 0, 0, 0, 0, 0, 1};
-  drawFace(clean, face, 0);
-  assert(clean.getPixel(120, 127) != 0);
-  puts("PASS: changed-band boundaries/identical frames, 605 Angry transition/blink frames, stale-affection suppression, visible eyelids, frown versus smile");
+  FaceState face = {Mood::Idle, 0, 0, 0, 0, 0, 0, 1};
+  for (Mood mood : {Mood::Idle, Mood::Happy, Mood::Angry, Mood::Love}) {
+    face = {mood, 1, 1, 1, 1, 0, 0, 1};
+    drawFace(clean, face, 0);
+    for (int y = 112; y < FACE_HEIGHT; ++y)
+      for (int x = 100; x <= 140; ++x) assert(clean.getPixel(x, y) == 0);
+  }
+  puts("PASS: inline frame storage, palette changes/RGB565 expansion, 605 Angry transition/blink frames, visible eyelids, mouth-free expressions");
 
   if (argc < 2) return 0;
   const std::string output = argv[1];
