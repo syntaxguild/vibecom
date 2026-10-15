@@ -1,25 +1,45 @@
 #include <Arduino.h>
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <SPI.h>
+#include "face.h"
+#ifdef WOKWI_ILI9341
+#include <Adafruit_ILI9341.h>
+#else
+#include <Adafruit_ST7789.h>
+#endif
 #include <ESP32Servo.h>
 #include <driver/gpio.h>
 #include <math.h>
 #include <string.h>
 
 namespace {
-constexpr uint8_t SDA_PIN = 21, SCL_PIN = 22, OLED_ADDRESS = 0x3C;
+// GPIO18 and GPIO19 remain dedicated to the servo and sonar, not default VSPI.
+constexpr uint8_t TFT_SCLK = 14, TFT_MOSI = 23, TFT_DC = 26, TFT_RST = 33;
+constexpr uint32_t TFT_SPI_HZ = 40000000; // Reduce to 20000000 for long/noisy wires.
+#ifdef WOKWI_ILI9341
+constexpr int8_t TFT_CS = 27;
+constexpr int16_t FACE_TOP = 80; // Center the same 240x160 face on the simulator's 240x320 LCD.
+#else
+constexpr int8_t TFT_CS = -1; // The 7-pin ST7789 module has no exposed CS.
+constexpr int16_t FACE_TOP = 40;
+constexpr uint8_t TFT_SPI_MODE = SPI_MODE0;
+constexpr bool TFT_INVERT = true;
+#endif
 constexpr uint8_t SERVO_PIN = 18, TRIG_PIN = 5, ECHO_PIN = 19;
 constexpr uint8_t PET_PIN = 4; // TTP223 OUT: HIGH while touched, LOW when released.
 constexpr uint32_t FRAME_US = 16667, SENSOR_PERIOD_US = 80000;
 constexpr uint32_t ECHO_TIMEOUT_US = 30000, SLEEP_AFTER_MS = 10000;
 constexpr float PI_F = 3.14159265f;
-constexpr size_t FRAME_BYTES = 128 * 64 / 8;
 
-enum class Mood : uint8_t { Idle, Happy, Angry, Love };
 enum class SonarPhase : uint8_t { Waiting, TriggerHigh, Listening };
 
-Adafruit_SSD1306 display(128, 64, &Wire, -1, 400000, 400000);
+SPIClass displaySPI(VSPI);
+#ifdef WOKWI_ILI9341
+Adafruit_ILI9341 display(&displaySPI, TFT_DC, TFT_CS, TFT_RST);
+#else
+Adafruit_ST7789 display(&displaySPI, TFT_CS, TFT_DC, TFT_RST);
+#endif
+GFXcanvas16 frameA(FACE_WIDTH, FACE_HEIGHT), frameB(FACE_WIDTH, FACE_HEIGHT);
+GFXcanvas16 *drawingFrame = &frameA, *sendingFrame = &frameB;
 Servo neck;
 Mood mood = Mood::Idle;
 bool displayReady = false, sleeping = false, moodChanged = true;
@@ -42,11 +62,12 @@ portMUX_TYPE echoMux = portMUX_INITIALIZER_UNLOCKED;
 volatile bool echoArmed = false, echoRose = false, echoReady = false;
 volatile uint32_t echoRiseUs = 0, echoDurationUs = 0;
 
-// Immutable in-flight image + last confirmed OLED contents. No frame is modified
-// during transmission. New procedural frames may supersede unsent frames.
-uint8_t pendingFrame[FRAME_BYTES] = {}, displayedFrame[FRAME_BYTES] = {};
+// Render into one RGB565 canvas while the other is sent unchanged in short bands.
+// No clear-and-redraw on the physical panel, and no PSRAM required.
 bool framePending = false;
-uint8_t scanPage = 0, displayErrors = 0;
+uint16_t sendRow = 0;
+uint32_t dirtyBands = 0;
+uint32_t maxTransferUs = 0;
 uint32_t renderedGeneration = 0, queuedGeneration = 0;
 uint32_t renderedCount = 0, presentedCount = 0, skippedCount = 0;
 uint32_t statsStartedMs = 0, lastLogMs = 0;
@@ -87,7 +108,7 @@ void acceptDistance(float cm, uint32_t nowMs) {
 }
 
 // Returns true only during the 10 us trigger. The loop keeps polling that phase
-// without entering any I2C/Serial operation; echo timing itself is interrupt driven.
+// without entering any SPI/Serial operation; echo timing itself is interrupt driven.
 bool serviceSonar(uint32_t nowUs, uint32_t nowMs) {
   if (sonarPhase == SonarPhase::TriggerHigh) {
     if (static_cast<uint32_t>(nowUs - triggerStartedUs) >= 10) {
@@ -169,48 +190,6 @@ void updateMood(uint32_t now) {
   sleeping = nextSleeping;
 }
 
-void drawHeart(int16_t cx, int16_t cy, int16_t radius) {
-  const int16_t lobeOffset = max(1, radius * 2 / 3);
-  display.fillCircle(cx - lobeOffset, cy - radius / 3, radius, SSD1306_WHITE);
-  display.fillCircle(cx + lobeOffset, cy - radius / 3, radius, SSD1306_WHITE);
-  display.fillTriangle(cx - radius - lobeOffset, cy, cx + radius + lobeOffset, cy,
-                       cx, cy + radius * 2, SSD1306_WHITE);
-}
-
-void drawSparkle(int16_t x, int16_t y, int16_t r) {
-  display.fillTriangle(x, y - r, x - 1, y, x + 1, y, SSD1306_WHITE);
-  display.fillTriangle(x, y + r, x - 1, y, x + 1, y, SSD1306_WHITE);
-  display.fillTriangle(x - r, y, x, y - 1, x, y + 1, SSD1306_WHITE);
-  display.fillTriangle(x + r, y, x, y - 1, x, y + 1, SSD1306_WHITE);
-}
-
-void drawEye(int16_t cx, int16_t cy, bool left, float openness, float seconds) {
-  // Petting relaxes the same capsule eyes into a soft smile, without a shape swap.
-  const float smile = max(happyBlend, 0.82f * loveBlend);
-  const float relaxed = loveBlend * (0.18f + 0.03f * sinf(seconds * 1.8f));
-  const int16_t w = 34 + static_cast<int16_t>(2 * smile);
-  const int16_t h = max(3, static_cast<int>(
-      34 * (1 - 0.55f * sleepBlend) * (1 - relaxed) * openness));
-  const int16_t x = cx - w / 2, y = cy - h / 2;
-  display.fillRoundRect(x, y, w, h, min(12, h / 2), SSD1306_WHITE);
-  if (smile > 0.02f && h > 8) {
-    // Carve the lower lid out of a solid capsule, morphing into a smiling arch.
-    // Relax the lower lid during blinks so the shrinking eye cannot be cut away.
-    display.fillCircle(cx, cy + 36 - static_cast<int16_t>(25 * smile * openness),
-                       22, SSD1306_BLACK);
-  }
-  if (angryBlend > 0.02f && h > 8) {
-    const int16_t slope = static_cast<int16_t>(15 * angryBlend);
-    if (left) {
-      display.fillTriangle(x - 1, y - 1, x + w, y - 1,
-                           x + w, y + slope, SSD1306_BLACK);
-    } else {
-      display.fillTriangle(x - 1, y - 1, x + w, y - 1,
-                           x - 1, y + slope, SSD1306_BLACK);
-    }
-  }
-}
-
 void renderFace(uint32_t nowMs, float dt) {
   happyBlend = approach(happyBlend, mood == Mood::Happy ? 1 : 0, 12, dt);
   angryBlend = approach(angryBlend, mood == Mood::Angry ? 1 : 0, 16, dt);
@@ -241,95 +220,47 @@ void renderFace(uint32_t nowMs, float dt) {
       openness = 1 - closed * closed;
     }
   }
-  const float seconds = nowMs * 0.001f;
-  const int16_t shakeX = lroundf(1.5f * angryBlend * sinf(seconds * 113));
-  const int16_t shakeY = lroundf(angryBlend * sinf(seconds * 89));
-  const int16_t petSway = lroundf(1.5f * loveBlend * sinf(seconds * 2.1f));
-  const int16_t petTilt = lroundf(1.2f * loveBlend * sinf(seconds * 2.1f));
-  const int16_t petLift = lroundf(loveBlend * (-1.5f + 0.5f * sinf(seconds * 1.8f)));
-  const int16_t offsetX = lroundf(gazeX) + shakeX + petSway;
-  const int16_t centerY = 33 + lroundf(gazeY + sinf(seconds * 2) +
-      1.5f * happyBlend * sinf(seconds * 9)) + shakeY + petLift;
   if (!displayReady) return;
-  display.clearDisplay();
-  drawEye(39 + offsetX, centerY - petTilt, true, openness, seconds);
-  drawEye(89 + offsetX, centerY + petTilt, false, openness, seconds);
-  // A small smile; accent marks sit outside the eyes rather than obscuring them.
-  if (angryBlend < 0.5f) {
-    display.fillCircle(64 + petSway, 52 + petLift, 4, SSD1306_WHITE);
-    display.fillCircle(64 + petSway, 50 + petLift, 4, SSD1306_BLACK);
-  } else {
-    display.fillRoundRect(60 + shakeX, 54, 8, 3, 1, SSD1306_WHITE);
-    display.drawLine(113, 13, 118, 18, SSD1306_WHITE);
-    display.drawLine(118, 13, 113, 18, SSD1306_WHITE);
-  }
-  if (happyBlend > 0.3f || loveBlend > 0.3f) {
-    const int16_t floatY = lroundf(2 * ((1 - loveBlend) * sinf(seconds * 4) +
-                                       loveBlend * sinf(seconds * 1.8f)));
-    drawHeart(10, 42 + floatY, 3);
-    const int16_t sparklePulse = lroundf((1 - loveBlend) * (static_cast<int>(seconds * 4) & 1));
-    drawSparkle(118, 27 - floatY, 3 + sparklePulse);
-    display.drawLine(16 + petSway, 49 + petLift, 19 + petSway, 47 + petLift, SSD1306_WHITE);
-    display.drawLine(109 + petSway, 47 + petLift, 112 + petSway, 49 + petLift, SSD1306_WHITE);
-  }
-  if (sleepBlend > 0.3f) {
-    display.setTextSize(1);
-    display.setTextColor(SSD1306_WHITE);
-    const int16_t floatY = 15 - static_cast<int16_t>((nowMs % 1800) * 12 / 1800);
-    display.setCursor(104, floatY);
-    display.print(F("Zzz"));
-  }
+  const FaceState face = {mood, happyBlend, angryBlend, loveBlend, sleepBlend,
+                          gazeX, gazeY, openness};
+  drawFace(*drawingFrame, face, nowMs * 0.001f);
   ++renderedGeneration;
   ++renderedCount;
 }
 
-// Transfer at most 120 changed bytes per loop (~3 ms at standard 400 kHz).
-// Full display.display() each frame would alone need >23 ms, below 60 FPS.
-// This dirty-page sender preserves bandwidth without overclocking the OLED bus.
+// 8 rows = 3,840 bytes, about 0.77 ms of wire time at 40 MHz.
+// Only this band blocks; sonar interrupts keep timing ECHO throughout.
 void serviceDisplay() {
   if (!displayReady) return;
   if (!framePending) {
     if (queuedGeneration == renderedGeneration) return;
     skippedCount += renderedGeneration - queuedGeneration - 1;
-    memcpy(pendingFrame, display.getBuffer(), FRAME_BYTES);
+    // Compare before recycling the previous displayed canvas for new rendering.
+    dirtyBands = changedFaceBands(*drawingFrame, *sendingFrame);
+    GFXcanvas16 *available = sendingFrame;
+    sendingFrame = drawingFrame;
+    drawingFrame = available;
     queuedGeneration = renderedGeneration;
+    sendRow = 0;
     framePending = true;
   }
-  for (uint8_t checked = 0; checked < 8; ++checked) {
-    const uint8_t page = (scanPage + checked) % 8;
-    const size_t base = page * 128;
-    int first = 0, last = 127;
-    while (first < 128 && pendingFrame[base + first] == displayedFrame[base + first]) ++first;
-    if (first == 128) continue;
-    while (last > first && pendingFrame[base + last] == displayedFrame[base + last]) --last;
-    last = min(last, first + 119);
-    Wire.beginTransmission(OLED_ADDRESS);
-    Wire.write(0x00); // command stream, horizontal address mode from begin()
-    Wire.write(SSD1306_COLUMNADDR);
-    Wire.write(first);
-    Wire.write(last);
-    Wire.write(SSD1306_PAGEADDR);
-    Wire.write(page);
-    Wire.write(page);
-    uint8_t error = Wire.endTransmission();
-    if (!error) {
-      Wire.beginTransmission(OLED_ADDRESS);
-      Wire.write(0x40); // pixel data
-      Wire.write(pendingFrame + base + first, last - first + 1);
-      error = Wire.endTransmission();
-    }
-    if (!error) {
-      memcpy(displayedFrame + base + first, pendingFrame + base + first, last - first + 1);
-      displayErrors = 0;
-    } else if (++displayErrors >= 3) {
-      displayReady = false;
-      Serial.println(F("OLED I2C failed; distance, touch and servo continue."));
-    }
-    scanPage = (page + 1) % 8;
-    return;
+  while (sendRow < FACE_HEIGHT && !(dirtyBands & (1UL << (sendRow / FACE_BAND_ROWS)))) {
+    sendRow += FACE_BAND_ROWS;
   }
-  framePending = false;
-  ++presentedCount;
+  if (sendRow < FACE_HEIGHT) {
+    const uint32_t startedUs = micros();
+    display.startWrite();
+    display.setAddrWindow(0, FACE_TOP + sendRow, FACE_WIDTH, FACE_BAND_ROWS);
+    display.writePixels(sendingFrame->getBuffer() + sendRow * FACE_WIDTH,
+                        FACE_BAND_ROWS * FACE_WIDTH);
+    display.endWrite();
+    maxTransferUs = max(maxTransferUs, static_cast<uint32_t>(micros() - startedUs));
+    sendRow += FACE_BAND_ROWS;
+  }
+  if (sendRow == FACE_HEIGHT) {
+    framePending = false;
+    ++presentedCount;
+  }
 }
 
 void serviceNeck(uint32_t now) {
@@ -362,13 +293,13 @@ void serviceLog(uint32_t now) {
   if (!moodChanged && static_cast<uint32_t>(now - lastLogMs) < 500) return;
   const char *name = mood == Mood::Love ? "LOVE" : mood == Mood::Angry ? "ANGRY" :
       mood == Mood::Happy ? "HAPPY" : sleeping ? "IDLE/SLEEPY" : "IDLE/LOOK";
-  char cm[20], message[180];
+  char cm[20], message[240];
   if (distanceCm < 0) snprintf(cm, sizeof(cm), "no echo");
   else snprintf(cm, sizeof(cm), "%.1f cm", distanceCm);
   snprintf(message, sizeof(message),
-      "Distance=%s | %s | Pet=%s | Servo=%d | FPS draw=%.1f OLED=%.1f | skipped=%lu",
+      "Distance=%s | %s | Pet=%s | Servo=%d | FPS draw=%.1f TFT=%.1f | skipped=%lu | SPI max=%.2f ms",
       cm, name, petHeld ? "touched" : "off", static_cast<int>(lroundf(neckAngle)),
-      renderFps, presentFps, static_cast<unsigned long>(skippedCount));
+      renderFps, presentFps, static_cast<unsigned long>(skippedCount), maxTransferUs * 0.001f);
   if (Serial.availableForWrite() >= static_cast<int>(strlen(message) + 2)) {
     Serial.println(message);
     moodChanged = false;
@@ -387,18 +318,23 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(ECHO_PIN), echoEdge, CHANGE);
   randomSeed(esp_random());
 
-  Wire.begin(SDA_PIN, SCL_PIN, 400000);
-  Wire.setTimeOut(10);
-  Wire.beginTransmission(OLED_ADDRESS);
-  displayReady = Wire.endTransmission() == 0 &&
-      display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS, false, false);
+  displayReady = frameA.getBuffer() && frameB.getBuffer();
   if (displayReady) {
-    display.clearDisplay();
-    display.display(); // Initial clear only; runtime sends changed regions.
-    display.setTextWrap(false);
+    displaySPI.begin(TFT_SCLK, -1, TFT_MOSI, TFT_CS);
+#ifdef WOKWI_ILI9341
+    display.begin(TFT_SPI_HZ);
+    display.invertDisplay(false);
+#else
+    display.init(240, 240, TFT_SPI_MODE);
+    display.setSPISpeed(TFT_SPI_HZ);
+    display.invertDisplay(TFT_INVERT);
+#endif
+    display.setRotation(0);
+    display.fillScreen(0); // Clear once, before sonar is armed.
   } else {
-    Serial.println(F("OLED unavailable at 0x3C. Continuing without display."));
+    Serial.println(F("ERROR: RGB565 canvas allocation failed; distance, touch and servo continue."));
   }
+  Serial.printf("Display buffers: 153600 bytes | free heap=%u\n", ESP.getFreeHeap());
 
   ESP32PWM::allocateTimer(0);
   neck.setPeriodHertz(50);
@@ -412,7 +348,7 @@ void setup() {
   previousFrameUs = micros();
   nextFrameUs = previousFrameUs;
   lastTriggerUs = previousFrameUs; // Let the sensor settle for 80 ms.
-  Serial.println(F("Desk Companion Bot: 60 Hz solid eyes, 4 moods, TTP223 touch GPIO4."));
+  Serial.println(F("Desk Companion Bot: 60 Hz color face, SPI TFT, 4 moods, TTP223 GPIO4."));
 }
 
 void loop() {
