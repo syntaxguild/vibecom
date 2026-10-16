@@ -1,0 +1,9 @@
+{
+  "name": "VL53L1X ToF (I2C model)",
+  "author": "Vibecom",
+  "pins": ["VIN", "GND", "SDA", "SCL"],
+  "controls": [
+    {"id": "distance", "label": "Distance (cm)", "type": "range", "min": 4, "max": 400, "step": 1},
+    {"id": "target", "label": "Target detected (0=no, 1=yes)", "type": "range", "min": 0, "max": 1, "step": 1}
+  ]
+}

@@ -5,10 +5,11 @@
   "parts": [
     { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 100, "left": 0, "attrs": {} },
     { "type": "wokwi-ili9341", "id": "tft", "top": -300, "left": -100, "rotate": 90, "attrs": {} },
-    { "type": "wokwi-text", "id": "tftLabel", "top": -340, "left": -140, "attrs": { "text": "Behavior preview: ILI9341 + HC-SR04 input surrogate\nActual v0.4: ST7789 + SG90 + VL53L1X (I2C not simulated)" } },
-    { "type": "wokwi-hc-sr04", "id": "distance", "top": 70, "left": 360, "attrs": { "distance": "100" } },
+    { "type": "wokwi-text", "id": "tftLabel", "top": -340, "left": -140, "attrs": { "text": "Vibecom v0.4: VL53L1X I2C + SG90\nILI9341 previews the real ST7789 face" } },
+    { "type": "chip-vl53l1x", "id": "distance", "top": 70, "left": 360, "attrs": { "distance": "100", "target": "1" } },
+    { "type": "wokwi-text", "id": "distanceLabel", "top": 5, "left": 320, "attrs": { "text": "VL53L1X ToF / I2C 0x29\nClick to set distance / missing target" } },
     { "type": "wokwi-servo", "id": "neck", "top": 330, "left": 360, "attrs": { "horn": "double" } },
-    { "type": "wokwi-slide-switch", "id": "pet", "top": 400, "left": 40, "attrs": { "value": "", "bounce": "0" } },
+    { "type": "wokwi-slide-switch", "id": "pet", "top": 400, "left": 40, "attrs": { "bounce": "0" } },
     { "type": "wokwi-text", "id": "petLabel", "top": 450, "left": -50, "attrs": { "text": "TTP223 OUT (simulation)\nLeft: release | Right: touch" } }
   ],
   "connections": [
@@ -20,13 +21,13 @@
     [ "tft:SCK", "esp:14", "blue", [ "h-50", "v260" ] ],
     [ "tft:D/C", "esp:26", "cyan", [ "h-60", "v260" ] ],
     [ "tft:CS", "esp:27", "yellow", [ "h-70", "v260" ] ],
-    [ "distance:TRIG", "esp:5", "orange", [ "v40", "*", "h140" ] ],
-    [ "distance:ECHO", "esp:19", "purple", [ "v60", "*", "h160" ] ],
+    [ "distance:SDA", "esp:21", "green", [] ],
+    [ "distance:SCL", "esp:22", "blue", [] ],
     [ "neck:PWM", "esp:18", "gold", [ "h-80", "*", "h120" ] ],
     [ "neck:V+", "esp:5V", "red", [ "h-60", "v130", "h-400", "*", "h-110", "v160" ] ],
-    [ "distance:VCC", "neck:V+", "red", [ "v80", "h-140", "*", "h-60" ] ],
+    [ "distance:VIN", "esp:3V3", "red", [] ],
     [ "neck:GND", "esp:GND.3", "black", [ "h-40", "*", "h220" ] ],
-    [ "distance:GND", "esp:GND.2", "black", [ "v20", "h90", "v-180", "*", "h360", "v-170", "h140" ] ],
+    [ "distance:GND", "esp:GND.2", "black", [] ],
     [ "pet:2", "esp:4", "magenta", [ "h-30", "v-35", "h180", "*", "h100" ] ],
     [ "pet:1", "esp:GND.1", "black", [ "h-110", "*", "h-90" ] ],
     [ "pet:3", "esp:3V3", "red", [ "h-50", "v-50", "*", "h-47" ] ]

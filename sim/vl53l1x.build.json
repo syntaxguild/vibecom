@@ -1,0 +1,8 @@
+{
+  "compiler": "0.28.1 (7cf4ffaebfd8)",
+  "sha256": {
+    "vl53l1x.chip.c": "881d0ebf9df0f7c14621b3f5e3be10d40f1a8d1ec2015ca33ec0d566d5a3aede",
+    "vl53l1x.chip.json": "36f1344eb5b7a1af53edf84671ae58da2fcb2d33a8ee330e9f7d2d5039091f09",
+    "vl53l1x.chip.wasm": "e36b6898855e120ccdda766000dc0ac2b8b32f18915794d594f640ff8a276cc2"
+  }
+}

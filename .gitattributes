@@ -1,3 +1,5 @@
 # CAD source fingerprints must match on Windows and Linux.
 mechanical/*.py text eol=lf
 mechanical/*.json text eol=lf
+sim/*.c text eol=lf
+sim/*.json text eol=lf

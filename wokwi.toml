@@ -2,3 +2,7 @@
 version = 1
 firmware = ".pio/build/esp32sim/firmware.bin"
 elf = ".pio/build/esp32sim/firmware.elf"
+
+[[chip]]
+name = "vl53l1x"
+binary = "sim/vl53l1x.chip.wasm"
