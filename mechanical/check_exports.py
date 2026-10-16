@@ -83,3 +83,10 @@ assert audit['geometry_gate_passed'], 'Regenerate/fix the assembly audit'
 assert not audit['existing_envelope_overlaps'] and not audit['provisional_proxy_overlaps']
 assert len(audit['base_fasteners']) == 4 and all(f['through_hole_clear'] and f['support_under_screw_head'] for f in audit['base_fasteners'])
 print('PASS: current assembly audit, connector reservations, sampled insertion paths and four base screw pads')
+
+robust = json.loads((root/'audit/robustness.json').read_text(encoding='utf-8'))
+assert robust['revision'] == spec['revision'] and robust['blend_sha256'] == audit['blend_sha256']
+assert robust['script_sha256'] == hashlib.sha256((root/'check_robustness.py').read_bytes()).hexdigest()
+assert robust['audit_loader_sha256'] == audit['audit_script_sha256']
+assert robust['digital_checks_passed'], 'Additional digital checks failed'
+print('PASS: position stress scenarios, sampled head yaw and closure screw insertion checks')

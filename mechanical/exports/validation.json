@@ -1,5 +1,5 @@
 {
-  "revision": "v0.6-fit-corrections",
+  "revision": "v0.6.1-clearance",
   "units": "mm",
   "parts": [
     {
@@ -20,12 +20,12 @@
     {
       "file": "04_body_shell.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 27156.762
+      "volume_mm3": 27151.287
     },
     {
       "file": "05_base_cover.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 15499.996
+      "volume_mm3": 15475.793
     },
     {
       "file": "06_neck_horn_adapter.stl",
@@ -70,8 +70,8 @@
     ]
   },
   "source_sha256": {
-    "reference.json": "393a4c49fea4875998bec2f796cda6cb1ef433f972576988a662e3a1805d35e3",
-    "build_model.py": "ee98aee7ca39f28bce3cd4c3fcd705fc0a6d4cd6efc7ba1298658113b81feb40",
+    "reference.json": "82374ceba277cfd459ff69e3035137dab4f41e633dab5f76e4872b46b25a40ab",
+    "build_model.py": "c3b0a35e59a3faa5670d340ece3481743438c1f8425bc15237799b3845230414",
     "../docs/eye-preview.png": "45b6115c2a1331e801bbfe7b9da8396837f518dd186d90c37bcdd3d8a7e50a09"
   }
 }

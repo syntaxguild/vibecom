@@ -1,5 +1,5 @@
 {
-  "revision": "v0.6-fit-corrections",
+  "revision": "v0.6.1-clearance",
   "units": "mm",
   "status": "Dimensioned prototype; physical fit, fasteners, horn and cable travel need validation",
   "enclosure": {

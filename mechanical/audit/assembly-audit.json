@@ -1,7 +1,7 @@
 {
-  "revision": "v0.6-fit-corrections",
+  "revision": "v0.6.1-clearance",
   "scope": "Read-only audit of shipped BLEND and declared provisional proxies",
-  "blend_sha256": "de2596d83706ae22ec28a02d2f498b689e3b9974e5a2b92839e3d0d9fc9c4c9e",
+  "blend_sha256": "16bab65d0d1be93312fd2b24c9498841acba15219dde34eeed55bf90b55460c6",
   "audit_script_sha256": "613360fa1690ac4579c606516cc3a5ee8e83dfd90cf2e05705ea89262c306dfe",
   "manufacturer_sources": {
     "display": "https://files.waveshare.com/upload/6/6d/2inch_LCD_Module_2D_Drawing.pdf",

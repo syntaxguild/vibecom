@@ -1,0 +1,1041 @@
+{
+  "revision": "v0.6.1-clearance",
+  "blend_sha256": "16bab65d0d1be93312fd2b24c9498841acba15219dde34eeed55bf90b55460c6",
+  "script_sha256": "6626a613e5562e715987c2e46475d81a1fac9ce953f2e67290c05391a6b2f61c",
+  "audit_loader_sha256": "613360fa1690ac4579c606516cc3a5ee8e83dfd90cf2e05705ea89262c306dfe",
+  "relative_position_stress": [
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        -0.2,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0.2,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        -0.2,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0.2,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        -0.2
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        0.2
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        -0.4,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0.4,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        -0.4,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0.4,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        -0.4
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        0.4
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        -0.2,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        0.2,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        0,
+        -0.2,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        0,
+        0.2,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        0,
+        0,
+        -0.2
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        0,
+        0,
+        0.2
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        -0.4,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        0.4,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        0,
+        -0.4,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        0,
+        0.4,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        0,
+        0,
+        -0.4
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_DevKitC_header_12.3",
+      "against": "05_base_cover",
+      "shift_mm": [
+        0,
+        0,
+        0.4
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        -0.2,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0.2,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        -0.2,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0.2,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        -0.2
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        0.2
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        -0.4,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0.4,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        -0.4,
+        0
+      ],
+      "overlap_mm3": 3.6899,
+      "intentional_front_stop_contact": true
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0.4,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        -0.4
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_Pololu_3415_PCB",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        0.4
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        -0.2,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0.2,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        -0.2,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0.2,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        -0.2
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        0.2
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        -0.4,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0.4,
+        0,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        -0.4,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0.4,
+        0
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        -0.4
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    },
+    {
+      "part": "REF_SG90_case",
+      "against": "04_body_shell",
+      "shift_mm": [
+        0,
+        0,
+        0.4
+      ],
+      "overlap_mm3": 0.0,
+      "intentional_front_stop_contact": false
+    }
+  ],
+  "head_motion": [
+    {
+      "yaw_deg": -60,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": -60,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": -50,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": -50,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": -40,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": -40,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": -30,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": -30,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": -20,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": -20,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": -10,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": -10,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 0,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 0,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 10,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 10,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 20,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 20,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 30,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 30,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 40,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 40,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 50,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 50,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 60,
+      "head_downward_mm": 0,
+      "overlap_mm3": 0.0
+    },
+    {
+      "yaw_deg": 60,
+      "head_downward_mm": 0.4,
+      "overlap_mm3": 0.0
+    }
+  ],
+  "closure_screws": [
+    {
+      "kind": "base",
+      "xy": [
+        -23,
+        -22
+      ],
+      "candidate_head_final_overlap_mm3": 0.0,
+      "candidate_shaft_electronics_overlap_mm3": 0.0,
+      "head_insertion": [
+        {
+          "head_center_z": -2.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -1.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -1.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -0.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 0.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 0.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 1.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 1.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 2.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 2.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 3.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 3.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 4.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 4.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 5.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 5.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 6.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 6.2,
+          "overlap_mm3": 0.0
+        }
+      ]
+    },
+    {
+      "kind": "base",
+      "xy": [
+        -23,
+        22
+      ],
+      "candidate_head_final_overlap_mm3": 0.0,
+      "candidate_shaft_electronics_overlap_mm3": 0.0,
+      "head_insertion": [
+        {
+          "head_center_z": -2.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -1.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -1.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -0.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 0.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 0.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 1.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 1.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 2.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 2.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 3.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 3.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 4.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 4.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 5.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 5.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 6.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 6.2,
+          "overlap_mm3": 0.0
+        }
+      ]
+    },
+    {
+      "kind": "base",
+      "xy": [
+        23,
+        -22
+      ],
+      "candidate_head_final_overlap_mm3": 0.0,
+      "candidate_shaft_electronics_overlap_mm3": 0.0,
+      "head_insertion": [
+        {
+          "head_center_z": -2.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -1.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -1.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -0.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 0.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 0.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 1.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 1.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 2.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 2.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 3.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 3.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 4.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 4.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 5.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 5.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 6.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 6.2,
+          "overlap_mm3": 0.0
+        }
+      ]
+    },
+    {
+      "kind": "base",
+      "xy": [
+        23,
+        22
+      ],
+      "candidate_head_final_overlap_mm3": 0.0,
+      "candidate_shaft_electronics_overlap_mm3": 0.0,
+      "head_insertion": [
+        {
+          "head_center_z": -2.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -1.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -1.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": -0.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 0.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 0.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 1.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 1.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 2.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 2.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 3.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 3.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 4.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 4.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 5.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 5.5,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 6.0,
+          "overlap_mm3": 0.0
+        },
+        {
+          "head_center_z": 6.2,
+          "overlap_mm3": 0.0
+        }
+      ]
+    },
+    {
+      "kind": "head_rear",
+      "xz": [
+        -31,
+        53.8
+      ],
+      "candidate_shaft_electronics_overlap_mm3": 0.0
+    },
+    {
+      "kind": "head_rear",
+      "xz": [
+        -31,
+        93.8
+      ],
+      "candidate_shaft_electronics_overlap_mm3": 0.0
+    },
+    {
+      "kind": "head_rear",
+      "xz": [
+        31,
+        53.8
+      ],
+      "candidate_shaft_electronics_overlap_mm3": 0.0
+    },
+    {
+      "kind": "head_rear",
+      "xz": [
+        31,
+        93.8
+      ],
+      "candidate_shaft_electronics_overlap_mm3": 0.0
+    }
+  ],
+  "limits": [
+    "Axis shifts are sensitivity scenarios, not measured printer error distributions",
+    "Only eight enclosure closure screws; LCD/servo/adapter nuts and actual horn remain unmodelled",
+    "No wire, torque, wear, heat or touch sensitivity testing",
+    "Passing test counts are not a probability of successful assembly"
+  ],
+  "digital_checks_passed": true
+}

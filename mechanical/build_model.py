@@ -286,6 +286,9 @@ for x in A['servo_mount_x']:
                            (x, -4, 42.8), 0.6, 'XY'), 'UNION')
     boolean(body, rounded('Adjustable servo roof slot', (3.4, 2.4, 14),
                            (x, -4, 44), 1, 'XY'))
+# Keep a 0.4 mm case-height envelope clear of the spacer's inner edges.
+boolean(body, rounded('Servo case tolerance relief', (23.8, 13, 29.8),
+                       (-5.5,-4,A['servo_case_z']), 1, 'XY'))
 # Small open optical port: no printed grille or uncalibrated dark cover glass.
 tof_z = E['tof_center_z']
 pw, ph, pt = SPEC['components']['distance']['pcb']
@@ -321,8 +324,8 @@ for x in [-A['base_boss_x'], A['base_boss_x']]:
     for y in [-A['base_boss_y'], A['base_boss_y']]:
         pad = cylinder('Base fastener pad',3,2.4,(x,y,9))
         boolean(base,pad,'UNION')
-        boolean(base, cylinder('Base screw head counterbore', 2.2, 4.4,
-                               (x, y, 5)))
+        boolean(base, cylinder('Base screw head counterbore', 2.2, 20,
+                               (x, y, -2.8)))
 for x in [-A['base_boss_x'], A['base_boss_x']]:
     for y in [-A['base_boss_y'], A['base_boss_y']]:
         boolean(base, cylinder('Base screw clearance', E['closure_hole_diameter']/2,
@@ -335,7 +338,7 @@ for x in [-12, 12]:
     boolean(base, cradle, 'UNION')
     boolean(base, rounded('PCB edge slot', (10, 2.4, 4), (x, 16, 12), 0.5, 'XY'))
 # Reserve room for the lower pin header instead of burying it in the cradles.
-boolean(base, rounded('Lower header and socket clearance', (49.06, 9.1, 3.14),
+boolean(base, rounded('Lower header and socket clearance', (49.06, 9.1, 3.94),
                        (0, 10.85, 12.3), 0.1))
 # A short L-shaped support holds the ToF PCB vertically when the base is fitted.
 boolean(base, rounded('ToF support upright', (8, 7, 9), (0, -16.5, 11.5), 0.5, 'XY'), 'UNION')
