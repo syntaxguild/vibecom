@@ -5,7 +5,7 @@
   "parts": [
     { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 100, "left": 0, "attrs": {} },
     { "type": "wokwi-ili9341", "id": "tft", "top": -300, "left": -100, "rotate": 90, "attrs": {} },
-    { "type": "wokwi-text", "id": "tftLabel", "top": -340, "left": -140, "attrs": { "text": "Color face preview: ILI9341 (simulation only)\nReference: Waveshare 15867 ST7789 + TowerPro SG90 Digital" } },
+    { "type": "wokwi-text", "id": "tftLabel", "top": -340, "left": -140, "attrs": { "text": "Color face preview: ILI9341 (simulation only)\nReference: Waveshare 17344 2-inch ST7789 + SG90 Digital" } },
     { "type": "wokwi-hc-sr04", "id": "distance", "top": 70, "left": 360, "attrs": { "distance": "100" } },
     { "type": "wokwi-servo", "id": "neck", "top": 330, "left": 360, "attrs": { "horn": "double" } },
     { "type": "wokwi-slide-switch", "id": "pet", "top": 400, "left": 40, "attrs": { "value": "", "bounce": "0" } },

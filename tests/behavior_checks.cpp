@@ -31,7 +31,11 @@ int main() {
   assert(untouched.neckMax == 135); // Old NVS cannot bypass the reference servo limit.
   assert(!editSettings(untouched, "set neck_max 151"));
   assert(Hardware::tftCs == 27 && Hardware::servoPulseMin == 1000);
+#ifdef VIBECOM_LARGE_SCREEN
+  assert(!strcmp(Hardware::settingsNamespace, "vibecom2"));
+#else
   assert(!strcmp(Hardware::settingsNamespace, "vibecomref"));
+#endif
 #else
   assert(Hardware::tftCs == -1 && Hardware::servoPulseMin == 500);
   assert(!strcmp(Hardware::settingsNamespace, "deskbot"));

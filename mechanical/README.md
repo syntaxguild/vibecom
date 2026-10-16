@@ -1,10 +1,12 @@
-# Vibecom — enclosure prototype v0.1
+# Vibecom — rounded companion prototype v0.2
 
-หุ่นตั้งโต๊ะหัวจอสี่เหลี่ยมมน สีงาช้าง หน้าสีกราไฟต์และคอสีดินเผา ขนาดตัวถังรวมโดยประมาณ **66 × 64 × 134 มม.** (กว้าง × ลึก × สูง ไม่รวมเซ็นเซอร์ที่ยื่นออกด้านหน้า) จอในภาพมีพื้นที่แสดงผลจริง 23.4 × 23.4 มม. ตาใช้ภาพจาก renderer ของเฟิร์มแวร์ ไม่ได้ขยายจอให้ใหญ่เกินอะไหล่ที่เลือก
+หุ่นตั้งโต๊ะหัวโตทรงหมอน สีงาช้าง ตัวเตี้ยมนสีเขียวอ่อน และเท้าเล็กสีชมพูอิฐ ลดคอเหลือ 8 มม. ย้ายสกรูหัวไปด้านหลัง ขนาดรวมโดยประมาณ **76 × 65 × 112 มม.** (กว้าง × ลึก × สูง รวมส่วนเซ็นเซอร์ที่ยื่นออกด้านหน้า) จอ IPS 2 นิ้วในภาพมีพื้นที่แสดงผลจริง 40.8 × 30.6 มม. ตาใช้ภาพจาก renderer ของเฟิร์มแวร์ ไม่ได้ขยายจอให้ใหญ่เกินอะไหล่ที่เลือก
 
 **สถานะ: แบบต้นแบบสำหรับตรวจขนาดและทดลองประกอบ ยังไม่ได้พิมพ์หรือประกอบกับชิ้นส่วนจริง** การตรวจผิวปิดของ STL ไม่ได้ยืนยัน fit, ความแข็งแรง, การชนขณะหมุน หรือการทำงานของทัชผ่านพลาสติก
 
 ![ภาพประกอบจากโมเดลจริง](exports/vibecom-assembled.png)
+
+![ตัวถังเดียวกันเมื่อแสดงอารมณ์ Happy จากเฟิร์มแวร์](exports/vibecom-happy.png)
 
 ![แยกชิ้นส่วน](exports/vibecom-exploded.png)
 
@@ -12,20 +14,20 @@
 
 | อุปกรณ์ | รุ่นอ้างอิง | ขนาดที่นำมาใช้ |
 | --- | --- | --- |
-| จอ | Waveshare **1.3inch LCD Module, SKU 15867** / ST7789, 8 ขา | PCB 45 × 31 มม.; active area 23.4 × 23.4 มม. |
+| จอ | Waveshare **2inch LCD Module, SKU 17344** / ST7789, 8 ขา | PCB 58 × 35 มม.; active area แนวนอน 40.8 × 30.6 มม. |
 | เซอร์โว | TowerPro **SG90 Digital positional** | เคส 23 × 12.2 × 29 มม.; ใช้ horn เดิมที่มากับเซอร์โว |
 | บอร์ด | Espressif **ESP32-DevKitC V4 / ESP32-WROOM-32E** | PCB 27.94 × 48.26 มม. |
 | สัมผัสหัว | DFRobot **Gravity DFR0030** / TTP223-BA6 | PCB 22 × 30 มม. |
 | ระยะ | SparkFun **SEN-15569 / HC-SR04 5V** | envelope 45 × 20 × 15 มม. |
 
-แหล่งขนาด/สเปก: [Waveshare](https://docs.waveshare.net/1.3inch_LCD_Module/), [คู่มือจอ](https://files.waveshare.com/upload/7/70/1.3inch_LCD_Module_user_manual_en.pdf), [TowerPro](https://towerpro.com.tw/product/sg90-7/), [มิติ DevKitC V4](https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_dimensions.pdf), [DFRobot](https://wiki.dfrobot.com/dfr0030/), [วงจร DFR0030](https://www.dfrobot.com.cn/images/upload/File/DFR0030/20140825132741ztc9n2.pdf), [SparkFun](https://www.sparkfun.com/ultrasonic-distance-sensor-hc-sr04.html), [datasheet HC-SR04](https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf)
+แหล่งขนาด/สเปก: [Waveshare](https://docs.waveshare.net/2inch_LCD_Module/), [TowerPro](https://towerpro.com.tw/product/sg90-7/), [มิติ DevKitC V4](https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_dimensions.pdf), [DFRobot](https://wiki.dfrobot.com/dfr0030/), [วงจร DFR0030](https://www.dfrobot.com.cn/images/upload/File/DFR0030/20140825132741ztc9n2.pdf), [SparkFun](https://www.sparkfun.com/ultrasonic-distance-sensor-hc-sr04.html), [datasheet HC-SR04](https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf)
 
 รุ่นเหล่านี้เป็น **สเปกเป้าหมายที่เลือกสำหรับงานนี้** ไม่ใช่การยืนยันว่าอุปกรณ์ที่ผู้ใช้มีอยู่เป็นรุ่นเดียวกัน บอร์ด clone แม้ชื่อคล้ายกันอาจมีขนาดและระยะรูต่างกัน
 
 ## ไฟล์ที่เปิดใช้ได้
 
 - [vibecom.blend](exports/vibecom.blend): เปิดแก้ใน Blender 5.2 มีชิ้นส่วนแยกชื่อ วัสดุ กล้อง และ reference ของอุปกรณ์ซ่อนตอน render
-- [vibecom.glb](exports/vibecom.glb): โมเดลประกอบพร้อมสี/ภาพตา ใช้ดูในโปรแกรมรองรับ glTF; หน่วยเมตร สูงประมาณ 0.134 ม.
+- [vibecom.glb](exports/vibecom.glb): โมเดลประกอบพร้อมสี/ภาพตา ใช้ดูในโปรแกรมรองรับ glTF; หน่วยเมตร สูงประมาณ 0.112 ม.
 - `exports/*.stl`: ชิ้นส่วนตัวถังทั้ง 6 ชิ้น หน่วยมิลลิเมตร ตำแหน่งอ้างอิงตอนประกอบ ต้องจัด orientation และวางลงฐานใน slicer ก่อนพิมพ์
 - [reference.json](reference.json): ขนาดหลัก รุ่นอุปกรณ์ และลิงก์แหล่งข้อมูล
 - [build_model.py](build_model.py): สร้าง geometry, STL, BLEND, GLB และภาพใหม่
@@ -33,18 +35,20 @@
 
 | STL | ชิ้นส่วน | จุดประกอบ |
 | --- | --- | --- |
-| `01_head_rear.stl` | เปลือกหัวหลัง | ช่องคอ ช่องสาย หลังคาบางเหนือจุดสัมผัส และเสาสกรู |
-| `02_head_front.stl` | ฝาหัวหน้า | หน้าต่าง 25 มม. และเสารอง PCB จอ |
+| `01_head_rear.stl` | ฝาบริการหัวด้านหลัง | เปิดเข้าถึงจอและทัช สกรูซ่อนด้านหลัง |
+| `02_head_front.stl` | เปลือกหัวด้านหน้า | หน้าต่าง 42 × 33 มม., เสารองจอ และหลังคาบางสำหรับทัช |
 | `03_face_insert.stl` | แผ่นหน้าสีดำ | ใช้เทปกาวบางหรือกาวที่เหมาะกับวัสดุหลังตรวจ fit |
-| `04_body_shell.stl` | ตัวถัง | รูเซ็นเซอร์ระยะ ช่องสายคอ ช่อง USB ด้านหลัง และแท่นเซอร์โว |
-| `05_base_cover.stl` | ฝาฐาน | รางรองบอร์ดสำหรับยึดด้วยสายรัด/เทป ไม่สมมติรูสกรูที่ไม่มีบน DevKitC |
-| `06_neck_horn_adapter.stl` | คอและแป้น horn | ใช้ horn และสกรู spline เดิม มีร่องปรับตำแหน่งสกรู และช่องสายเข้าด้านข้าง |
+| `04_body_shell.stl` | ตัวถังทรงมน | รูเซ็นเซอร์ช่วงล่าง ช่องคอ ช่อง USB ด้านขวา และร่องยึดเซอร์โว |
+| `05_base_cover.stl` | ฐานและเท้าเล็ก | ขารอง DevKitC แนวตั้งด้านหลังสำหรับสายรัด/เทป ไม่สมมติรู PCB |
+| `06_neck_horn_adapter.stl` | คอสั้นและแป้น horn | ใช้ horn และสกรู spline เดิม มีร่องปรับตำแหน่งสกรู และช่องสายเข้าด้านข้าง |
 
 ผนังหลัก 2.4 มม.; จุดสัมผัสหัวเหลือหลังคา 1 มม. สกรูปิดฝามี clearance 2.4 มม. และ pilot 1.8 มม. เป็นจุดเริ่มต้นสำหรับทดลอง M2 แบบยึดพลาสติก ความยาวสกรูและขนาด pilot ต้องเลือกจากชิ้นทดสอบ วัสดุ และสกรูจริง
 
+DFR0030 วางขวางหัว (ด้าน 30 มม. ตามแกนซ้าย–ขวา) เพื่อให้ PCB อยู่ใต้ช่วงหลังคาที่ค่อนข้างราบ แทนการดันปลายบอร์ดเข้ามุมโค้งด้านหลัง
+
 ## สิ่งที่ต้องยืนยันก่อนพิมพ์ทั้งตัว
 
-1. **จอ:** ระยะรู 40 × 26 มม., ความสูง stack ของ LCD/PCB, ตำแหน่ง active area, หัวต่อและระยะงอสายเป็นค่าจัดวางเบื้องต้น ต้องเทียบ drawing/วัดบอร์ดจริงก่อนยึดฝาหน้า
+1. **จอ:** ระยะรูเริ่มต้น 53 × 30 มม., ความสูง stack ของ LCD/PCB, ตำแหน่ง active area, หัวต่อและระยะงอสายเป็นค่าจัดวางเบื้องต้น ต้องเทียบ drawing/วัดบอร์ดจริงก่อนยึดฝาหน้า
 2. **เซอร์โว:** ยืนยันตำแหน่งแกน ความสูง spline ระยะรู tab และรูบน horn รุ่นที่ซื้อ ร่องบน adapter เป็นจุดเริ่มต้น ห้ามแทน horn ด้วย spline ที่พิมพ์โดยเดาแบบ
 3. **เซ็นเซอร์ระยะ:** ระยะศูนย์กระบอก 26 มม. และรู 17 มม. เป็นค่าตั้งต้น ต้องวัดโมดูลจริง ตัวต้นแบบยังไม่มี clip ล็อก PCB เซ็นเซอร์ ใช้ขายึด/แผ่นรองที่ออกแบบจากโมดูลจริง
 4. **สายไฟ:** เดินสายจอ/ทัชผ่านคอโดยเว้น loop ให้หันได้และไม่ขูด horn ทดสอบเต็มช่วงการหมุน ชิ้นส่วนนี้ยังไม่มี bearing แยกรับน้ำหนักหัว
@@ -64,15 +68,17 @@ pio run -e esp32vibecom -t upload
 
 SG90 Digital ผู้ผลิตไม่ได้รับรองการหมุน 180° สำหรับรุ่นปกติ จึงตั้งช่วงคำสั่งเริ่มต้น `15 / 75 / 135`, ปฏิเสธ `neck_max >150` และเริ่ม PWM ที่ 1000–2000 µs มุมคำสั่งใน Servo API ไม่ใช่การรับรององศาที่วัดได้จริง ต้องคาลิเบรต travel และกระแสกับเซอร์โวจริงก่อนติดหัว ใช้แหล่งจ่ายมอเตอร์ที่เหมาะสมและกราวด์ร่วม
 
-ค่าตั้งรุ่นอ้างอิงใช้ NVS namespace `vibecomref` แยกจาก `deskbot` ของโปรไฟล์เก่า จึงไม่รับช่วงคอ 180° ที่เคยบันทึกมาอัตโนมัติ หลังแฟลชให้ `show` → คาลิเบรต → `save` ถ้าจะกลับจอ 7 ขา ใช้ `pio run -e esp32dev -t upload` พร้อมการต่อแบบเดิม ค่าตั้งเดิมยังอยู่ใน namespace ของมัน
+ค่าตั้งรุ่น 2 นิ้วใช้ NVS namespace `vibecom2` แยกจาก `vibecomref` ของรุ่น 1.3 นิ้วและ `deskbot` ของจอ 7 ขา จึงไม่รับช่วงคอ 180° ที่เคยบันทึกมาอัตโนมัติ หลังแฟลชให้ `show` → คาลิเบรต → `save` ถ้าจะกลับจอ Waveshare 15867 เดิม ใช้ `pio run -e esp32vibecom13 -t upload`; ถ้าจะกลับจอ 7 ขา ใช้ `pio run -e esp32dev -t upload` พร้อมการต่อแบบเดิม ค่าตั้งเดิมยังอยู่ใน namespace ของมัน
 
 ## สร้างและตรวจไฟล์ใหม่
 
 แก้ขนาดหลักใน `reference.json` และตำแหน่งยึด/ชิ้นส่วนใน `build_model.py` แล้วรัน:
 
 ```sh
-blender --background --factory-startup --python mechanical/build_model.py
+blender --background --factory-startup --python-exit-code 1 --python mechanical/build_model.py
 python mechanical/check_exports.py
 ```
 
 ตัวสร้างตรวจ mesh ก่อน export; checker อ่าน STL ที่ส่งออกจริงอีกครั้งเพื่อตรวจว่าทุกขอบมีสองหน้า เนื้อแต่ละชิ้นต่อกันเป็นชิ้นเดียว ปริมาตรเป็นบวก และ GLB ใช้สเกลถูกต้อง CI รัน checker ได้ด้วย Python มาตรฐาน แต่ไม่ได้ regenerate/render ด้วย Blender บน GitHub
+
+รุ่น v0.1 และไฟล์เดิมเก็บอยู่ใน Git commit `84d022a` รุ่น v0.2 เพิ่มการขยายภาพตอนส่ง SPI โดยยังใช้ renderer 240×160 เดิม จึงไม่ต้องจองบัฟเฟอร์ภาพเต็มจอใหม่ และใช้ภาพตาจากโค้ดเดียวกับเฟิร์มแวร์

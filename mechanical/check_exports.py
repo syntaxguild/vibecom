@@ -54,6 +54,6 @@ assert json_type == b'JSON'
 gltf = json.loads(glb[20:20+json_length])
 assert any(all(abs(value - 0.001) < 1e-8 for value in node.get('scale', [1, 1, 1]))
            for node in gltf['nodes']), 'GLB must convert millimeters to meters'
-for name in ['vibecom.blend', 'vibecom-assembled.png', 'vibecom-exploded.png']:
+for name in ['vibecom.blend', 'vibecom-assembled.png', 'vibecom-happy.png', 'vibecom-exploded.png']:
     assert (out / name).stat().st_size > 1000, name
 print('PASS: source fingerprints, GLB container/scale, editable BLEND and rendered previews')

@@ -1,51 +1,96 @@
 {
-  "revision": "v0.1-fit-prototype",
+  "revision": "v0.2-rounded-companion",
   "units": "mm",
   "status": "Dimensioned prototype; physical fit, fasteners, horn and cable travel need validation",
   "enclosure": {
-    "head": [64, 44, 58],
-    "head_center": [0, 0, 105],
-    "body": [66, 64, 54],
-    "body_center": [0, 0, 31],
+    "head": [
+      76,
+      46,
+      58
+    ],
+    "head_center": [
+      0,
+      0,
+      83
+    ],
+    "body": [
+      62,
+      62,
+      42
+    ],
+    "body_center": [
+      0,
+      0,
+      25
+    ],
     "wall": 2.4,
-    "screen_aperture": 25,
+    "screen_aperture": [
+      42,
+      33
+    ],
     "closure_hole_diameter": 2.4,
     "closure_pilot_diameter": 1.8,
     "sonar_hole_diameter": 17,
     "sonar_pitch": 26,
     "neck_bore": 12,
     "touch_roof": 1.0,
-    "fit_clearance": 0.4
+    "fit_clearance": 0.4,
+    "head_radius": 13,
+    "body_radius": 17,
+    "neck_height": 8
   },
   "components": {
     "display": {
-      "model": "Waveshare 1.3inch LCD Module, SKU 15867",
-      "pcb": [45, 31],
-      "active_area": [23.4, 23.4],
-      "mount_pitch": [40, 26],
+      "model": "Waveshare 2inch LCD Module, SKU 17344",
+      "pcb": [
+        58,
+        35
+      ],
+      "active_area": [
+        40.8,
+        30.6
+      ],
+      "mount_pitch": [
+        53,
+        30
+      ],
       "mount_pitch_status": "Provisional; confirm on the purchased board",
-      "source": "https://docs.waveshare.net/1.3inch_LCD_Module/"
+      "source": "https://docs.waveshare.net/2inch_LCD_Module/"
     },
     "servo": {
       "model": "TowerPro SG90 Digital (positional, not continuous rotation)",
-      "case": [23, 12.2, 29],
+      "case": [
+        23,
+        12.2,
+        29
+      ],
       "mount_tab_span": 32.3,
       "horn_interface": "Use supplied horn; verify horn slots and spline height on the actual servo",
       "source": "https://towerpro.com.tw/product/sg90-7/"
     },
     "controller": {
       "model": "Espressif ESP32-DevKitC V4 / ESP32-WROOM-32E",
-      "pcb": [27.94, 48.26],
+      "pcb": [
+        27.94,
+        48.26
+      ],
       "source": "https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_dimensions.pdf"
     },
     "touch": {
       "model": "DFRobot Gravity Digital Capacitive Touch Sensor DFR0030 / TTP223-BA6",
-      "pcb": [22, 30],
+      "pcb": [
+        22,
+        30
+      ],
       "source": "https://wiki.dfrobot.com/dfr0030/"
     },
     "distance": {
       "model": "SparkFun SEN-15569 / HC-SR04 5V",
-      "envelope": [45, 20, 15],
+      "envelope": [
+        45,
+        20,
+        15
+      ],
       "transducer_pitch_status": "26 mm is a provisional layout value, verify actual module",
       "source": "https://www.sparkfun.com/ultrasonic-distance-sensor-hc-sr04.html"
     }

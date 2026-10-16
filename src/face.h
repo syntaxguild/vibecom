@@ -49,6 +49,32 @@ inline void expandFaceBand(const FaceCanvas &canvas, uint16_t row, uint16_t *out
   }
 }
 
+// Keep the compact logical renderer; upscale only the immutable SPI band.
+// Ceiling boundaries partition every output row exactly once (including the last).
+constexpr int displayFaceRow(int logicalRow) {
+  return (logicalRow * Hardware::scaleNumerator + Hardware::scaleDenominator - 1) /
+      Hardware::scaleDenominator;
+}
+constexpr int DISPLAY_FACE_WIDTH = displayFaceRow(FACE_WIDTH);
+constexpr int DISPLAY_FACE_HEIGHT = displayFaceRow(FACE_HEIGHT);
+constexpr int DISPLAY_BAND_ROWS = displayFaceRow(FACE_BAND_ROWS);
+constexpr int DISPLAY_FACE_LEFT = (Hardware::panelWidth - DISPLAY_FACE_WIDTH) / 2;
+constexpr int DISPLAY_FACE_TOP = (Hardware::panelHeight - DISPLAY_FACE_HEIGHT) / 2;
+static_assert(DISPLAY_FACE_LEFT >= 0 && DISPLAY_FACE_TOP >= 0, "Face must fit the selected panel");
+
+inline uint16_t displayFacePixel(const FaceCanvas &canvas, int x, int y) {
+  const int sx = x * Hardware::scaleDenominator / Hardware::scaleNumerator;
+  const int sy = y * Hardware::scaleDenominator / Hardware::scaleNumerator;
+  return canvas.palette[canvas.getBuffer()[sy * FACE_WIDTH + sx]];
+}
+inline int expandDisplayBand(const FaceCanvas &canvas, int sourceRow, uint16_t *output) {
+  const int top = displayFaceRow(sourceRow), end = displayFaceRow(sourceRow + FACE_BAND_ROWS);
+  for (int y = top; y < end; ++y)
+    for (int x = 0; x < DISPLAY_FACE_WIDTH; ++x)
+      *output++ = displayFacePixel(canvas, x, y);
+  return end - top;
+}
+
 struct FaceState {
   Mood mood;
   float happy, angry, love, sleep, gazeX, gazeY, openness;

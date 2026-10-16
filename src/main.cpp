@@ -19,11 +19,9 @@ constexpr uint32_t TFT_SPI_HZ = 40000000; // Reduce to 20000000 for long/noisy w
 #ifdef WOKWI_ILI9341
 constexpr int8_t TFT_CS = 27;
 constexpr uint8_t TFT_ROTATION = 1;
-constexpr int16_t FACE_LEFT = 40, FACE_TOP = 40; // Center the face on the landscape 320x240 LCD.
 #else
 constexpr int8_t TFT_CS = Hardware::tftCs;
-constexpr uint8_t TFT_ROTATION = 0;
-constexpr int16_t FACE_LEFT = 0, FACE_TOP = 40;
+constexpr uint8_t TFT_ROTATION = Hardware::tftRotation;
 constexpr uint8_t TFT_SPI_MODE = SPI_MODE0;
 constexpr bool TFT_INVERT = true;
 #endif
@@ -43,7 +41,7 @@ Adafruit_ST7789 display(&displaySPI, TFT_CS, TFT_DC, TFT_RST);
 #endif
 FaceCanvas frameA, frameB;
 FaceCanvas *drawingFrame = &frameA, *sendingFrame = &frameB;
-uint16_t transferPixels[FACE_WIDTH * FACE_BAND_ROWS] = {};
+uint16_t transferPixels[DISPLAY_FACE_WIDTH * DISPLAY_BAND_ROWS] = {};
 Servo neck;
 Companion bot;
 bool displayReady = false, moodChanged = true;
@@ -262,8 +260,8 @@ void renderFace(uint32_t nowMs, float dt) {
   ++renderedCount;
 }
 
-// 8 rows = 3,840 bytes, about 0.77 ms of wire time at 40 MHz.
-// Only this band blocks; sonar interrupts keep timing ECHO throughout.
+// One logical band becomes 8 rows on 1.3-inch or 10/11 rows on 2-inch.
+// Only this SPI band blocks; sonar interrupts keep timing ECHO throughout.
 void serviceDisplay() {
   if (!displayReady) return;
   if (!framePending) {
@@ -283,10 +281,11 @@ void serviceDisplay() {
   }
   if (sendRow < FACE_HEIGHT) {
     const uint32_t startedUs = micros();
-    expandFaceBand(*sendingFrame, sendRow, transferPixels);
+    const int rows = expandDisplayBand(*sendingFrame, sendRow, transferPixels);
     display.startWrite();
-    display.setAddrWindow(FACE_LEFT, FACE_TOP + sendRow, FACE_WIDTH, FACE_BAND_ROWS);
-    display.writePixels(transferPixels, FACE_BAND_ROWS * FACE_WIDTH);
+    display.setAddrWindow(DISPLAY_FACE_LEFT, DISPLAY_FACE_TOP + displayFaceRow(sendRow),
+                          DISPLAY_FACE_WIDTH, rows);
+    display.writePixels(transferPixels, rows * DISPLAY_FACE_WIDTH);
     display.endWrite();
     maxTransferUs = max(maxTransferUs, static_cast<uint32_t>(micros() - startedUs));
     sendRow += FACE_BAND_ROWS;
@@ -365,7 +364,7 @@ void setup() {
   display.begin(TFT_SPI_HZ);
   display.invertDisplay(false);
 #else
-  display.init(240, 240, TFT_SPI_MODE);
+  display.init(240, Hardware::panelInitHeight, TFT_SPI_MODE);
   display.setSPISpeed(TFT_SPI_HZ);
   display.invertDisplay(TFT_INVERT);
 #endif

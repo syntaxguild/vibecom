@@ -7,10 +7,12 @@
 void saveFrame(FaceCanvas &canvas, const std::string &path) {
   FILE *file = fopen(path.c_str(), "wb");
   assert(file);
-  fprintf(file, "P6\n240 240\n255\n");
-  for (int y = 0; y < 240; ++y) {
-    for (int x = 0; x < 240; ++x) {
-      const uint16_t color = y >= 40 && y < 200 ? canvas.palette[canvas.getPixel(x, y - 40)] : 0;
+  fprintf(file, "P6\n%d %d\n255\n", Hardware::panelWidth, Hardware::panelHeight);
+  for (int y = 0; y < Hardware::panelHeight; ++y) {
+    for (int x = 0; x < Hardware::panelWidth; ++x) {
+      const int fx = x - DISPLAY_FACE_LEFT, fy = y - DISPLAY_FACE_TOP;
+      const uint16_t color = fx >= 0 && fx < DISPLAY_FACE_WIDTH && fy >= 0 && fy < DISPLAY_FACE_HEIGHT ?
+          displayFacePixel(canvas, fx, fy) : 0;
       const unsigned char pixel[] = {
           static_cast<unsigned char>(((color >> 11) & 31) * 255 / 31),
           static_cast<unsigned char>(((color >> 5) & 63) * 255 / 63),
@@ -46,6 +48,30 @@ int main(int argc, char **argv) {
   uint16_t band[FACE_WIDTH * FACE_BAND_ROWS];
   expandFaceBand(clean, 8, band);
   assert(band[0] == clean.palette[1] && band[1] == 0);
+  // Check every scaled pixel, row boundary and a canary after the output buffer.
+  for (int y = 0; y < FACE_HEIGHT; ++y)
+    for (int x = 0; x < FACE_WIDTH; ++x) clean.drawPixel(x, y, (x + y) % 5);
+  for (int i = 0; i < 5; ++i) clean.palette[i] = i * 12345;
+  int covered = 0;
+  uint16_t expanded[DISPLAY_FACE_WIDTH * DISPLAY_BAND_ROWS + 1];
+  for (int sourceRow = 0; sourceRow < FACE_HEIGHT; sourceRow += FACE_BAND_ROWS) {
+    const int top = displayFaceRow(sourceRow);
+    assert(top == covered);
+    std::fill(expanded, expanded + DISPLAY_FACE_WIDTH * DISPLAY_BAND_ROWS + 1, 0xA55A);
+    const int rows = expandDisplayBand(clean, sourceRow, expanded);
+    assert(rows > 0 && rows <= DISPLAY_BAND_ROWS);
+    for (int y = 0; y < rows; ++y)
+      for (int x = 0; x < DISPLAY_FACE_WIDTH; ++x) {
+        const int sx = x * Hardware::scaleDenominator / Hardware::scaleNumerator;
+        const int sy = (top + y) * Hardware::scaleDenominator / Hardware::scaleNumerator;
+        assert(sy >= sourceRow && sy < sourceRow + FACE_BAND_ROWS);
+        assert(expanded[y * DISPLAY_FACE_WIDTH + x] == clean.palette[(sx + sy) % 5]);
+      }
+    assert(expanded[rows * DISPLAY_FACE_WIDTH] == 0xA55A);
+    assert(expanded[DISPLAY_FACE_WIDTH * DISPLAY_BAND_ROWS] == 0xA55A);
+    covered += rows;
+  }
+  assert(covered == DISPLAY_FACE_HEIGHT && covered + DISPLAY_FACE_TOP <= Hardware::panelHeight);
   // Incoming Angry must render identically even if Happy/Love/Sleep blends linger.
   // Sweep entry, the old 0.5 mouth threshold, steady anger, and the entire blink.
   for (float anger : {0.0f, 0.03f, 0.49f, 0.51f, 1.0f}) {
@@ -92,7 +118,7 @@ int main(int argc, char **argv) {
   drawFace(stale, {Mood::Love, 0, 0, 1, 0, 0, 0, 1}, 0);
   // Expressions must differ in geometry as well as palette.
   assert(memcmp(clean.getBuffer(), stale.getBuffer(), FACE_WIDTH * FACE_HEIGHT) != 0);
-  puts("PASS: inline frame storage, RGB565/dirty bands, 605 Angry frames, 976 event/mood frames, distinct Happy/Love, mouth-free expressions");
+  puts("PASS: frame storage, RGB565/dirty bands, scaled pixels/row coverage, 605 Angry frames, 976 event/mood frames, distinct Happy/Love, mouth-free expressions");
 
   if (argc < 2) return 0;
   const std::string output = argv[1];
