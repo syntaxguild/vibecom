@@ -40,7 +40,6 @@ def material(name, color, roughness=0.4, metallic=0):
 
 ivory = material('Warm ivory polymer', (0.78, 0.75, 0.67))
 graphite = material('Continuous black visor', (0, 0, 0), 0.6)
-orange = material('Terracotta neck', (0.66, 0.22, 0.12))
 rubber = material('Soft blush feet', (0.63, 0.37, 0.31), 0.65)
 sage = material('Soft sage body', (0.39, 0.55, 0.46), 0.5)
 blue = material('Reference servo blue', (0.025, 0.16, 0.48))
@@ -190,6 +189,13 @@ hz = E['head_center'][2]
 wall = E['wall']
 hr = E['head_radius']
 front_y, split_y = -hd/2, 12
+head_bottom = hz-hh/2
+body_top = E['body_center'][2]+E['body'][2]/2
+joint_top = 54
+mount_top = joint_top+wall
+assert abs(head_bottom-body_top-E['head_body_gap']) < 1e-6
+assert E['head_body_gap'] > 0
+assert mount_top < hz-SPEC['components']['display']['pcb'][1]/2
 
 
 def hollow_head(name):
@@ -210,9 +216,25 @@ finish(rear, ivory)
 front = hollow_head('02_head_front')
 boolean(front, rounded('Open service rear', (200, 100, 200), (0, 62, hz), 0.01))
 boolean(front, rounded('LCD opening', (42, 12, 33), (0, front_y, hz), 2))
-boolean(front, cylinder('Neck socket', E['neck_bore']/2+0.4, 10, (0, -4, hz-hh/2)))
+# Recess the existing horn adapter into the lowered head. Only a running seam
+# remains above the torso; the head's entire underside clears it during yaw.
+boolean(front, cylinder('Recessed joint pocket', 14.5, 16, (0, -4, head_bottom)))
+seat = cylinder('Internal joint seat', 17.5, mount_top-head_bottom,
+                (0, -4, (mount_top+head_bottom)/2))
+boolean(seat, cylinder('Seat clearance', 14.5, 24, (0, -4, 51)))
+boolean(seat, rounded('Seat rear service clearance', (200, 100, 200),
+                      (0, 61.8, hz), 0.01))
+# Trim just the new seat; intersecting the whole shell with its coincident
+# exterior would create ambiguous coplanar surfaces in the boolean solver.
+boolean(seat, softbox('Keep mounting seat inside head', (hw, hd, hh),
+                      (0, 0, hz), hr), 'INTERSECT')
+boolean(front, seat, 'UNION')
 for x in [-10, 10]:
-    boolean(front, cylinder('Head adapter fastener', 1.2, 10, (x, -4, hz-hh/2)))
+    boolean(front, rounded('Internal mounting bridge', (12, 6, wall),
+                           (math.copysign(12, x), -4, joint_top+wall/2), 1, 'XY'), 'UNION')
+    boolean(front, cylinder('Head adapter fastener', 1.2, 10, (x, -4, joint_top)))
+boolean(front, cylinder('Cable clearance in mounting bridges', E['neck_bore']/2+0.4,
+                        20, (0, -4, 51)))
 # Touch board sits under a 1 mm plastic roof; no mechanical button is required.
 boolean(front, rounded('Touch roof relief', (32, 24, 5),
                        (0, 0, hz+hh/2-E['touch_roof']-2.5), 3, 'XY'))
@@ -239,7 +261,7 @@ body = softbox('04_body_shell', (bw, bd, bh), (0, 0, bz), br)
 boolean(body, softbox('Body cavity', (bw-2*wall, bd-2*wall, bh-2*wall),
                      (0, 0, bz), br-wall))
 boolean(body, rounded('Servo insertion slot', (24.2, 13.4, 14), (-5.5, -4, 46), 1, 'XY'))
-boolean(body, cylinder('Neck cable port', 3, 12, (12, -4, 46)))
+boolean(body, cylinder('Concealed joint cable port', 3, 12, (12, -4, 46)))
 for x in [-22, 11]:
     boolean(body, rounded('Servo roof fastener slot', (2.4, 7, 12), (x, -4, 45), 1, 'XY'))
 for x in [-E['sonar_pitch']/2, E['sonar_pitch']/2]:
@@ -266,6 +288,7 @@ for x in [-20, 20]:
     boolean(base, rounded('Upright PCB cradle', (8, 8, 6), (x, 16, 10), 1, 'XY'), 'UNION')
     boolean(base, rounded('PCB edge slot', (10, 2.4, 4), (x, 16, 12), 0.5, 'XY'))
 finish(base, rubber)
+# Preserve the exported filename; this part is now concealed in the head.
 neck = cylinder('06_neck_horn_adapter', 9, 8, (0, -4, 50))
 boolean(neck, cylinder('Adapter hollow', E['neck_bore']/2, 12, (0, -4, 50)))
 boolean(neck, cylinder('Adapter flange', 14, 3, (0, -4, 52.5)), 'UNION')
@@ -277,7 +300,7 @@ for x in [-6.5, 6.5]:
 boolean(neck, rounded('Side cable entrance', (8, 7, 4), (8, -4, 50), 1))
 for x in [-10, 10]:
     boolean(neck, cylinder('Head adapter screw', 1.2, 7, (x, -4, 52.5)))
-finish(neck, ivory)
+finish(neck, graphite)
 
 # Purchased components are reference envelopes, excluded from the printable STLs.
 finish(rounded('REF_Waveshare_17344_PCB', (58, 1.6, 35), (0, -16.9, hz), 1), green, guides)
@@ -324,7 +347,11 @@ for poly in screen.data.polygons:
 finish(screen, texture, visual)
 
 # Reject bad CAD before publishing files. STL has no units: export raw mm deliberately.
-report = {'revision': SPEC['revision'], 'units': 'mm', 'parts': []}
+report = {'revision': SPEC['revision'], 'units': 'mm', 'parts': [],
+          'joint': {'head_body_gap_mm': round(head_bottom-body_top, 3),
+                    'adapter_flange_top_mm': joint_top,
+                    'internal_mount_top_mm': mount_top,
+                    'display_pcb_bottom_mm': hz-SPEC['components']['display']['pcb'][1]/2}}
 for obj in parts:
     clean_solid(obj)
     bm = bmesh.new()
@@ -392,7 +419,7 @@ camera_data.type = 'ORTHO'
 camera_data.ortho_scale = 0.175
 camera_data.clip_start = 0.001
 camera_data.clip_end = 20
-aim(camera, (0, 0, 0.056))
+aim(camera, (0, 0, (hz+hh/2)/2000))
 scene.camera = camera
 scene.render.filepath = str(OUT / 'vibecom-assembled.png')
 for workspace_screen in bpy.data.screens:
@@ -401,7 +428,7 @@ for workspace_screen in bpy.data.screens:
             space = area.spaces.active
             space.clip_start = 0.001
             space.clip_end = 10
-            space.region_3d.view_location = Vector((0, 0, 0.056))
+            space.region_3d.view_location = Vector((0, 0, (hz+hh/2)/2000))
             space.region_3d.view_distance = 0.28
             space.region_3d.view_rotation = camera.rotation_euler.to_quaternion()
             space.shading.type = 'MATERIAL'

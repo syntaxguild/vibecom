@@ -1,5 +1,5 @@
 {
-  "revision": "v0.2-rounded-companion",
+  "revision": "v0.3-concealed-joint",
   "units": "mm",
   "parts": [
     {
@@ -10,7 +10,7 @@
     {
       "file": "02_head_front.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 22709.803
+      "volume_mm3": 23336.412
     },
     {
       "file": "03_face_insert.stl",
@@ -33,9 +33,15 @@
       "volume_mm3": 2327.25
     }
   ],
+  "joint": {
+    "head_body_gap_mm": 0.8,
+    "adapter_flange_top_mm": 54,
+    "internal_mount_top_mm": 56.4,
+    "display_pcb_bottom_mm": 58.3
+  },
   "source_sha256": {
-    "reference.json": "77309f13176c02e5650d72389b2efc34d99e3f59b7425129c4ea30026b03457f",
-    "build_model.py": "7e7e4dd95a3b21e89c1fa9280bb1eda33eff1cb29d1099104211a2778d3afded",
+    "reference.json": "1644f46b2ba6d1cf7b85ee54a55c5ba030d4b1850a61ca0d61a1f74a48ea8178",
+    "build_model.py": "91f5a44c19bbcab1a1940ef1609ebaf608ad0e02123f8f86b1e164b21e149384",
     "../docs/eye-preview.png": "45b6115c2a1331e801bbfe7b9da8396837f518dd186d90c37bcdd3d8a7e50a09"
   }
 }

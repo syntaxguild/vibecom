@@ -12,6 +12,7 @@ report = json.loads((out / 'validation.json').read_text(encoding='utf-8'))
 for name, expected in report['source_sha256'].items():
     assert hashlib.sha256((root / name).read_bytes()).hexdigest() == expected, f'Regenerate CAD: {name}'
 assert len(report['parts']) == 6
+bounds = {}
 for part in report['parts']:
     path = out / part['file']
     data = path.read_bytes()
@@ -45,7 +46,18 @@ for part in report['parts']:
     assert volume > 0 and abs(volume - part['volume_mm3']) < max(1, volume * 0.001), path
     dimensions = [max(v[i] for v in vertices) - min(v[i] for v in vertices) for i in range(3)]
     assert 1 < max(dimensions) < 150, f'STL unit error: {path}'
+    bounds[path.stem] = (min(v[2] for v in vertices), max(v[2] for v in vertices))
     print(f'PASS: {path.name}: closed, connected, {triangles} triangles, {volume:.1f} mm3')
+spec = json.loads((root / 'reference.json').read_text(encoding='utf-8'))
+head_bottom = min(bounds[name][0] for name in ['01_head_rear', '02_head_front'])
+gap = head_bottom - bounds['04_body_shell'][1]
+assert abs(gap-spec['enclosure']['head_body_gap']) < 0.001, 'Head/torso running seam'
+joint = report['joint']
+assert abs(gap-joint['head_body_gap_mm']) < 0.001
+assert abs(bounds['06_neck_horn_adapter'][1]-joint['adapter_flange_top_mm']) < 0.001
+assert head_bottom < joint['adapter_flange_top_mm'] < joint['internal_mount_top_mm']
+assert joint['internal_mount_top_mm'] < joint['display_pcb_bottom_mm'], 'Joint/display clearance'
+print(f'PASS: {gap:.1f} mm head/torso seam and recessed adapter below display PCB')
 glb = (out / 'vibecom.glb').read_bytes()
 magic, version, length = struct.unpack_from('<4sII', glb)
 assert magic == b'glTF' and version == 2 and length == len(glb)

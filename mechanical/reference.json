@@ -1,5 +1,5 @@
 {
-  "revision": "v0.2-rounded-companion",
+  "revision": "v0.3-concealed-joint",
   "units": "mm",
   "status": "Dimensioned prototype; physical fit, fasteners, horn and cable travel need validation",
   "enclosure": {
@@ -11,7 +11,7 @@
     "head_center": [
       0,
       0,
-      83
+      75.8
     ],
     "body": [
       62,
@@ -37,7 +37,7 @@
     "fit_clearance": 0.4,
     "head_radius": 13,
     "body_radius": 17,
-    "neck_height": 8
+    "head_body_gap": 0.8
   },
   "components": {
     "display": {
