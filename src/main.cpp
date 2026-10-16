@@ -8,12 +8,18 @@
 #endif
 #include <ESP32Servo.h>
 #include <Preferences.h>
+#ifdef VIBECOM_TOF
+#include <Wire.h>
+#include <VL53L1X.h>
+#include "distance_reading.h"
+#else
 #include <driver/gpio.h>
+#endif
 #include <math.h>
 #include <string.h>
 
 namespace {
-// GPIO18 and GPIO19 remain dedicated to the servo and sonar, not default VSPI.
+// Custom SPI pins keep the servo and legacy sonar separate from default VSPI.
 constexpr uint8_t TFT_SCLK = 14, TFT_MOSI = 23, TFT_DC = 26, TFT_RST = 33;
 constexpr uint32_t TFT_SPI_HZ = 40000000; // Reduce to 20000000 for long/noisy wires.
 #ifdef WOKWI_ILI9341
@@ -25,13 +31,17 @@ constexpr uint8_t TFT_ROTATION = Hardware::tftRotation;
 constexpr uint8_t TFT_SPI_MODE = SPI_MODE0;
 constexpr bool TFT_INVERT = true;
 #endif
-constexpr uint8_t SERVO_PIN = 18, TRIG_PIN = 5, ECHO_PIN = 19;
+constexpr uint8_t SERVO_PIN = 18;
+#ifdef VIBECOM_TOF
+constexpr uint8_t TOF_SDA = 21, TOF_SCL = 22;
+#else
+constexpr uint8_t TRIG_PIN = 5, ECHO_PIN = 19;
+constexpr uint32_t ECHO_TIMEOUT_US = 30000;
+enum class SonarPhase : uint8_t { Waiting, TriggerHigh, Listening };
+#endif
 constexpr uint8_t PET_PIN = 4; // TTP223 OUT: HIGH while touched, LOW when released.
 constexpr uint32_t FRAME_US = 16667, SENSOR_PERIOD_US = 80000;
-constexpr uint32_t ECHO_TIMEOUT_US = 30000;
 constexpr float PI_F = 3.14159265f;
-
-enum class SonarPhase : uint8_t { Waiting, TriggerHigh, Listening };
 
 SPIClass displaySPI(VSPI);
 #ifdef WOKWI_ILI9341
@@ -53,11 +63,17 @@ uint32_t nextFrameUs = 0, previousFrameUs = 0, lastServoMs = 0;
 uint32_t blinkStartedMs = 0, nextBlinkMs = 0;
 bool blinking = false;
 
+#ifdef VIBECOM_TOF
+VL53L1X distanceSensor;
+bool tofReady = false;
+uint32_t lastTofPollUs = 0;
+#else
 SonarPhase sonarPhase = SonarPhase::Waiting;
 uint32_t lastTriggerUs = 0, triggerStartedUs = 0, listeningStartedUs = 0;
 portMUX_TYPE echoMux = portMUX_INITIALIZER_UNLOCKED;
 volatile bool echoArmed = false, echoRose = false, echoReady = false;
 volatile uint32_t echoRiseUs = 0, echoDurationUs = 0;
+#endif
 
 // Statically backed indexed canvases: no large heap allocations before setup().
 // The palette stays with its immutable frame until all changed bands are sent.
@@ -126,8 +142,10 @@ void consoleCommand(const char *line) {
 }
 
 void serviceConsole() {
+#ifndef VIBECOM_TOF
   // NVS writes/command output may pause a frame, so do not run them during sonar capture.
   if (sonarPhase != SonarPhase::Waiting) return;
+#endif
   static char line[96];
   static size_t length = 0;
   static bool overflow = false;
@@ -144,6 +162,20 @@ void serviceConsole() {
   }
 }
 
+#ifdef VIBECOM_TOF
+bool serviceDistance(uint32_t nowUs, uint32_t nowMs) {
+  if (!tofReady || static_cast<uint32_t>(nowUs - lastTofPollUs) < 10000) return false;
+  lastTofPollUs = nowUs;
+  // Poll readiness, never wait for a ranging cycle in the animation loop.
+  // Wire's bounded timeout also covers a missing/stuck I2C device.
+  if (!distanceSensor.dataReady()) return false;
+  const uint16_t mm = distanceSensor.read(false);
+  const bool busOk = distanceSensor.last_status == 0 && !distanceSensor.timeoutOccurred();
+  bot.acceptDistance(tofDistanceCm(mm, distanceSensor.ranging_data.range_status, busOk), nowMs);
+  // Invalid/missing samples expire naturally after 400 ms in Companion.
+  return false;
+}
+#else
 void IRAM_ATTR echoEdge() {
   const uint32_t now = micros();
   const bool high = gpio_get_level(static_cast<gpio_num_t>(ECHO_PIN));
@@ -163,7 +195,7 @@ void IRAM_ATTR echoEdge() {
 
 // Returns true only during the 10 us trigger. The loop keeps polling that phase
 // without entering any SPI/Serial operation; echo timing itself is interrupt driven.
-bool serviceSonar(uint32_t nowUs, uint32_t nowMs) {
+bool serviceDistance(uint32_t nowUs, uint32_t nowMs) {
   if (sonarPhase == SonarPhase::TriggerHigh) {
     if (static_cast<uint32_t>(nowUs - triggerStartedUs) >= 10) {
       digitalWrite(TRIG_PIN, LOW);
@@ -207,6 +239,7 @@ bool serviceSonar(uint32_t nowUs, uint32_t nowMs) {
   }
   return false;
 }
+#endif
 
 void updateBehavior(uint32_t now) {
   const Mood previous = bot.mood;
@@ -261,7 +294,7 @@ void renderFace(uint32_t nowMs, float dt) {
 }
 
 // One logical band becomes 8 rows on 1.3-inch or 10/11 rows on 2-inch.
-// Only this SPI band blocks; sonar interrupts keep timing ECHO throughout.
+// Transfer one band per loop; legacy sonar interrupts keep timing ECHO throughout.
 void serviceDisplay() {
   if (!displayReady) return;
   if (!framePending) {
@@ -332,7 +365,7 @@ void serviceLog(uint32_t now) {
   const char *name = bot.mood == Mood::Love ? "LOVE" : bot.mood == Mood::Angry ? "ANGRY" :
       bot.mood == Mood::Happy ? "HAPPY" : bot.sleeping ? "IDLE/SLEEPY" : "IDLE/LOOK";
   char cm[20], message[240];
-  if (bot.distanceCm < 0) snprintf(cm, sizeof(cm), "no echo");
+  if (bot.distanceCm < 0) snprintf(cm, sizeof(cm), "unavailable");
   else snprintf(cm, sizeof(cm), "%.1f cm", bot.distanceCm);
   snprintf(message, sizeof(message),
       "Distance=%s | %s | Action=%s | Pet=%s | Servo=%d | FPS draw=%.1f TFT=%.1f | skipped=%lu | SPI max=%.2f ms",
@@ -352,11 +385,13 @@ void setup() {
   Serial.printf("Hardware=%s\n", Hardware::name);
   loadSettings();
   neckAngle = bot.settings.neckCenter;
+#ifndef VIBECOM_TOF
   pinMode(TRIG_PIN, OUTPUT);
   digitalWrite(TRIG_PIN, LOW);
   pinMode(ECHO_PIN, INPUT);
-  pinMode(PET_PIN, INPUT_PULLDOWN);
   attachInterrupt(digitalPinToInterrupt(ECHO_PIN), echoEdge, CHANGE);
+#endif
+  pinMode(PET_PIN, INPUT_PULLDOWN);
   randomSeed(esp_random());
 
   displaySPI.begin(TFT_SCLK, -1, TFT_MOSI, TFT_CS);
@@ -369,7 +404,7 @@ void setup() {
   display.invertDisplay(TFT_INVERT);
 #endif
   display.setRotation(TFT_ROTATION);
-  display.fillScreen(0); // Clear once, before sonar is armed.
+  display.fillScreen(0); // Clear once, before starting distance measurements.
   displayReady = true;
   Serial.printf("Display=READY | static indexed frames=76800 bytes | free heap=%u\n", ESP.getFreeHeap());
 
@@ -379,13 +414,35 @@ void setup() {
   neck.write(bot.settings.neckCenter);
   if (!neck.attached()) Serial.println(F("ERROR: servo attachment failed."));
 
+#ifdef VIBECOM_TOF
+  // Supply the Pololu carrier VIN from 3V3 so its I2C pull-ups are 3.3 V too.
+  const bool busStarted = Wire.begin(TOF_SDA, TOF_SCL, 400000);
+  Wire.setTimeOut(10);
+  distanceSensor.setTimeout(100);
+  tofReady = busStarted && distanceSensor.init() &&
+      distanceSensor.setDistanceMode(VL53L1X::Long) &&
+      distanceSensor.setMeasurementTimingBudget(50000);
+  if (tofReady) {
+    distanceSensor.startContinuous(SENSOR_PERIOD_US / 1000);
+    tofReady = distanceSensor.last_status == 0;
+  }
+  Serial.println(tofReady ? F("Distance sensor=VL53L1X READY | I2C21/22 | 50ms budget / 80ms period") :
+      F("ERROR: VL53L1X unavailable; check VIN=3V3, GND, SDA21/SCL22, then restart. Touch/display remain active."));
+#else
+  Serial.println(F("Distance sensor=HC-SR04 | TRIG5 / ECHO19"));
+#endif
+
   const uint32_t now = millis();
   bot.begin(now);
   lastServoMs = statsStartedMs = now;
   nextBlinkMs = now + 2400;
   previousFrameUs = micros();
   nextFrameUs = previousFrameUs;
+#ifdef VIBECOM_TOF
+  lastTofPollUs = previousFrameUs;
+#else
   lastTriggerUs = previousFrameUs; // Let the sensor settle for 80 ms.
+#endif
   Serial.println(F("Desk Companion Bot: filtered distance, gestures, personalities. Type help + Enter."));
   showSettings();
 }
@@ -393,7 +450,7 @@ void setup() {
 void loop() {
   const uint32_t nowUs = micros();
   const uint32_t nowMs = millis();
-  if (serviceSonar(nowUs, nowMs)) return;
+  if (serviceDistance(nowUs, nowMs)) return;
   updateBehavior(nowMs);
   serviceConsole();
   serviceNeck(nowMs);

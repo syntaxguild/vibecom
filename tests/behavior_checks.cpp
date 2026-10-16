@@ -1,8 +1,9 @@
 #include "behavior.h"
+#include "distance_reading.h"
 #include <assert.h>
 #include <limits>
 
-// Run the production behavior at 5 ms ticks with the same 80 ms sonar cadence.
+// Run production behavior at 5 ms ticks with the 80 ms distance-sample cadence.
 struct Rig {
   Companion bot;
   uint32_t now, sampleAge = 80;
@@ -21,6 +22,23 @@ struct Rig {
 };
 
 int main() {
+  assert(tofDistanceCm(40, 0, true) == 4);
+  assert(tofDistanceCm(300, 0, true) == 30);
+  assert(tofDistanceCm(4000, 0, true) == 400);
+  for (uint16_t mm : {0, 39, 4001, 65535}) assert(tofDistanceCm(mm, 0, true) < 0);
+  for (uint8_t status = 1; status < 15; ++status) assert(tofDistanceCm(100, status, true) < 0);
+  assert(tofDistanceCm(100, 255, true) < 0);
+  assert(tofDistanceCm(100, 0, false) < 0);
+  Companion optical;
+  optical.begin(0);
+  for (uint32_t now : {80U, 160U, 240U}) optical.acceptDistance(tofDistanceCm(300, 0, true), now);
+  optical.update(false, 500);
+  assert(optical.distanceCm == 30);
+  optical.acceptDistance(tofDistanceCm(0, 4, true), 600);
+  optical.update(false, 650);
+  assert(optical.distanceCm < 0); // Invalid optical samples cannot keep stale proximity alive.
+  optical.acceptDistance(tofDistanceCm(300, 0, true), 700);
+  assert(optical.distanceCm < 0); // Reacquisition still requires three valid samples.
   assert(validSettings(Settings{}));
   assert(Settings{}.neckMax == Hardware::neckMax);
 #ifdef VIBECOM_REFERENCE
@@ -179,5 +197,5 @@ int main() {
   for (float bad : {-1.0f, 0.0f, 401.0f, std::numeric_limits<float>::quiet_NaN()})
     invalid.acceptDistance(bad, 10);
   assert(invalid.distanceCm < 0);
-  puts("PASS: filtered distance/hysteresis/dropout, greeting cooldown, tap/double/hold/bounce, sleep/wake, rollover, settings validation/roundtrip, calibrated event poses");
+  puts("PASS: ToF status/bus/range validation and stale reacquisition, filtered distance/hysteresis/dropout, gestures, sleep/wake, rollover, settings roundtrip, calibrated poses");
 }

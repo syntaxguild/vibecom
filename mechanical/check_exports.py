@@ -58,6 +58,10 @@ assert abs(bounds['06_neck_horn_adapter'][1]-joint['adapter_flange_top_mm']) < 0
 assert head_bottom < joint['adapter_flange_top_mm'] < joint['internal_mount_top_mm']
 assert joint['internal_mount_top_mm'] < joint['display_pcb_bottom_mm'], 'Joint/display clearance'
 print(f'PASS: {gap:.1f} mm head/torso seam and recessed adapter below display PCB')
+assert len(report['fit']) == 3 and all(pair['overlap_mm3'] < 0.01 for pair in report['fit'])
+assert report['tof_aperture']['clear_reference_rays'] == 36
+assert report['tof_aperture']['aperture_mm'] == spec['enclosure']['tof_aperture']
+print('PASS: generated mount intersection and ToF aperture reports (reference geometry only)')
 glb = (out / 'vibecom.glb').read_bytes()
 magic, version, length = struct.unpack_from('<4sII', glb)
 assert magic == b'glTF' and version == 2 and length == len(glb)

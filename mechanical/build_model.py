@@ -44,8 +44,7 @@ rubber = material('Soft blush feet', (0.63, 0.37, 0.31), 0.65)
 sage = material('Soft sage body', (0.39, 0.55, 0.46), 0.5)
 blue = material('Reference servo blue', (0.025, 0.16, 0.48))
 green = material('Reference PCB', (0.025, 0.20, 0.10))
-metal = material('Sensor aluminum', (0.45, 0.48, 0.49), 0.25, 0.8)
-grille = material('Matte silver sensor grille', (0.48, 0.51, 0.48), 0.8, 0.3)
+optical = material('ToF optical windows', (0.045, 0.025, 0.055), 0.18)
 
 
 def recalc(obj):
@@ -264,9 +263,17 @@ boolean(body, rounded('Servo insertion slot', (24.2, 13.4, 14), (-5.5, -4, 46), 
 boolean(body, cylinder('Concealed joint cable port', 3, 12, (12, -4, 46)))
 for x in [-22, 11]:
     boolean(body, rounded('Servo roof fastener slot', (2.4, 7, 12), (x, -4, 45), 1, 'XY'))
-for x in [-E['sonar_pitch']/2, E['sonar_pitch']/2]:
-    boolean(body, cylinder('Lower belly sonar port', E['sonar_hole_diameter']/2,
-                           18, (x, -bd/2, 22), 'Y'))
+# Small open optical port: no printed grille or uncalibrated dark cover glass.
+tof_z = E['tof_center_z']
+pw, ph, pt = SPEC['components']['distance']['pcb']
+boolean(body, rounded('ToF optical aperture', (E['tof_aperture'][0], 14, E['tof_aperture'][1]),
+                       (0, -bd/2, tof_z), 1.5))
+for x in [-7.2, 7.2]:
+    boolean(body, rounded('ToF edge guide', (3, 5.5, 21.2), (x, -26, 26.6), 0.5), 'UNION')
+    # Open towards the interior: raise the board through the base, then seat
+    # it forwards. A captive vertical slot would obstruct this insertion path.
+    boolean(body, rounded('ToF PCB edge channel', (1.5, 12, 28),
+                           (math.copysign(6, x), -20.75, 21.2), 0.1))
 # The DevKitC is now upright at the back; USB exits the right flank.
 boolean(body, rounded('Side USB service opening', (14, 12, 9), (bw/2, 16, 25), 2))
 for x in [-21, 21]:
@@ -280,13 +287,19 @@ boolean(base, rounded('Keep base cap only', (200, 200, 200), (0, 0, 108), 0.01, 
 for x in [-13, 13]:
     boolean(base, paw('Little paw', (x, -12, 4)), 'UNION')
 boolean(base, rounded('Flat soles', (200, 200, 100), (0, 0, -50), 0.01, 'XY'))
+boolean(base, rounded('Keep paw tops below base seam', (200, 200, 200),
+                       (0, 0, 108), 0.01, 'XY'))
 for x in [-21, 21]:
     for y in [-19, 19]:
         boolean(base, cylinder('Base screw clearance', E['closure_hole_diameter']/2,
                                18, (x, y, 5)))
-for x in [-20, 20]:
+for x in [-12, 12]:
     boolean(base, rounded('Upright PCB cradle', (8, 8, 6), (x, 16, 10), 1, 'XY'), 'UNION')
     boolean(base, rounded('PCB edge slot', (10, 2.4, 4), (x, 16, 12), 0.5, 'XY'))
+# A short L-shaped support holds the ToF PCB vertically when the base is fitted.
+boolean(base, rounded('ToF support upright', (8, 7, 9), (0, -16.5, 11.5), 0.5, 'XY'), 'UNION')
+boolean(base, rounded('ToF support ledge', (10, 11, 2.4),
+                       (0, -21, tof_z-ph/2-1.2), 0.4, 'XY'), 'UNION')
 finish(base, rubber)
 # Preserve the exported filename; this part is now concealed in the head.
 neck = cylinder('06_neck_horn_adapter', 9, 8, (0, -4, 50))
@@ -309,17 +322,12 @@ finish(rounded('REF_SG90_tabs', (32.3, 12.2, 2.5), (-5.5, -4, 42.35), 1, 'XY'), 
 finish(rounded('REF_DevKitC_PCB', (48.26, 1.6, 27.94), (0, 16, 25), 1), green, guides)
 finish(rounded('REF_DevKitC_components', (40, 6, 24), (0, 12, 25), 1), blue, guides)
 finish(rounded('REF_DFR0030_touch', (30, 22, 1.6), (0, 0, hz+hh/2-1.8), 1, 'XY'), green, guides)
-finish(rounded('REF_HCSR04_PCB', (45, 1.6, 20), (0, -20.5, 22), 1), green, guides)
-for x in [-E['sonar_pitch']/2, E['sonar_pitch']/2]:
-    finish(cylinder('Sonar can reference', 8, 12, (x, -27.4, 22), 'Y'), metal, visual)
-    finish(cylinder('Sensor dark mesh backing', 7, 0.05, (x, -33.42, 22), 'Y'), graphite, visual)
-    sensor_face = cylinder('Silver belly mesh', 7.2, 0.3, (x, -33.55, 22), 'Y')
-    for dx in range(-5, 6, 2):
-        for dz in range(-5, 6, 2):
-            if dx*dx + dz*dz < 38:
-                boolean(sensor_face, cylinder('Grille perforation', 0.45, 1,
-                                               (x+dx, -33.55, 22+dz), 'Y'))
-    finish(sensor_face, grille, visual)
+finish(rounded('REF_Pololu_3415_PCB', (pw, pt, ph), (0, -26, tof_z), 0.3), green, guides)
+finish(rounded('ToF sensor package reference', (4.9, 1.2, 2.5),
+               (0, -26-pt/2-0.6, tof_z), 0.25), graphite, visual)
+for x in [-1.25, 1.25]:
+    finish(rounded('ToF optical window reference', (1.3, 0.05, 1.6),
+                   (x, -26-pt/2-1.225, tof_z), 0.25), optical, visual)
 touch_marker = rounded('Soft touch marker visual', (14, 10, 0.2),
                        (0, 0, hz+hh/2+0.1), 4, 'XY')
 finish(touch_marker, rubber, visual)
@@ -368,6 +376,41 @@ for obj in parts:
                           apply_modifiers=True, use_scene_unit=False, global_scale=1)
     report['parts'].append({'file': f'{obj.name}.stl', 'nonmanifold_edges': bad,
                             'volume_mm3': round(volume, 3)})
+
+# Check mounts and mating parts at construction scale (mm), before parent scaling.
+report['fit'] = []
+tof_pcb = next(obj for obj in guides if obj.name == 'REF_Pololu_3415_PCB')
+for first, second in [(body, base), (body, tof_pcb), (base, tof_pcb)]:
+    probe = first.copy()
+    probe.data = first.data.copy()
+    bpy.context.collection.objects.link(probe)
+    cutter = second.copy()
+    cutter.data = second.data.copy()
+    bpy.context.collection.objects.link(cutter)
+    boolean(probe, cutter, 'INTERSECT')
+    bm = bmesh.new()
+    bm.from_mesh(probe.data)
+    overlap = abs(bm.calc_volume(signed=True))
+    bm.free()
+    bpy.data.objects.remove(probe, do_unlink=True)
+    if overlap >= 0.01:
+        raise RuntimeError(f'{first.name}/{second.name}: overlap={overlap} mm3')
+    report['fit'].append({'parts': [first.name, second.name], 'overlap_mm3': round(overlap, 6)})
+
+# Conservatively probe +/-13.5 degrees in both axes from the package corners.
+# This verifies the provisional aperture, not the real lens/header geometry.
+blocked = 0
+for x in [-2.45, 2.45]:
+    for z in [tof_z-1.25, tof_z+1.25]:
+        for dx in [-1, 0, 1]:
+            for dz in [-1, 0, 1]:
+                direction = Vector((dx*math.tan(math.radians(13.5)), -1,
+                                    dz*math.tan(math.radians(13.5)))).normalized()
+                origin = body.matrix_world.inverted() @ Vector((x, -26-pt/2-1.225, z))
+                blocked += body.ray_cast(origin, direction, distance=10)[0]
+if blocked:
+    raise RuntimeError(f'ToF aperture blocks {blocked}/36 reference rays')
+report['tof_aperture'] = {'clear_reference_rays': 36, 'aperture_mm': E['tof_aperture']}
 
 assembly = bpy.data.objects.new('VIBECOM_mm_to_meters', None)
 bpy.context.collection.objects.link(assembly)

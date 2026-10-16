@@ -25,7 +25,8 @@ output.mkdir(parents=True, exist_ok=True)
 environment = dict(os.environ)
 environment['PATH'] = str(Path(compiler).parent) + os.pathsep + environment.get('PATH', '')
 profiles = [('legacy', []), ('reference', ['-DVIBECOM_REFERENCE']),
-            ('large', ['-DVIBECOM_REFERENCE', '-DVIBECOM_LARGE_SCREEN'])]
+            ('large', ['-DVIBECOM_REFERENCE', '-DVIBECOM_LARGE_SCREEN']),
+            ('tof', ['-DVIBECOM_REFERENCE', '-DVIBECOM_LARGE_SCREEN', '-DVIBECOM_TOF'])]
 for profile, flags in profiles:
     behavior_executable = output / (f'behavior-{profile}' + ('.exe' if os.name == 'nt' else ''))
     subprocess.run([compiler, '-std=c++11', '-O2', '-Wall', '-Wextra', *flags,

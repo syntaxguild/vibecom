@@ -1,5 +1,5 @@
 {
-  "revision": "v0.3-concealed-joint",
+  "revision": "v0.4-compact-tof",
   "units": "mm",
   "parts": [
     {
@@ -20,12 +20,12 @@
     {
       "file": "04_body_shell.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 22440.427
+      "volume_mm3": 23894.06
     },
     {
       "file": "05_base_cover.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 12154.747
+      "volume_mm3": 12601.059
     },
     {
       "file": "06_neck_horn_adapter.stl",
@@ -39,9 +39,39 @@
     "internal_mount_top_mm": 56.4,
     "display_pcb_bottom_mm": 58.3
   },
+  "fit": [
+    {
+      "parts": [
+        "04_body_shell",
+        "05_base_cover"
+      ],
+      "overlap_mm3": 0.0
+    },
+    {
+      "parts": [
+        "04_body_shell",
+        "REF_Pololu_3415_PCB"
+      ],
+      "overlap_mm3": 0.0
+    },
+    {
+      "parts": [
+        "05_base_cover",
+        "REF_Pololu_3415_PCB"
+      ],
+      "overlap_mm3": 0.0
+    }
+  ],
+  "tof_aperture": {
+    "clear_reference_rays": 36,
+    "aperture_mm": [
+      8,
+      6
+    ]
+  },
   "source_sha256": {
-    "reference.json": "1644f46b2ba6d1cf7b85ee54a55c5ba030d4b1850a61ca0d61a1f74a48ea8178",
-    "build_model.py": "91f5a44c19bbcab1a1940ef1609ebaf608ad0e02123f8f86b1e164b21e149384",
+    "reference.json": "3806dc4da755eaec8fcfec7f2989be90b04161a4f6724f4e95d18931ab8162ae",
+    "build_model.py": "7656240f4b77990a4c4f7163f3493f62c6d640cd034eddf3cfc3c3d397f3be9d",
     "../docs/eye-preview.png": "45b6115c2a1331e801bbfe7b9da8396837f518dd186d90c37bcdd3d8a7e50a09"
   }
 }

@@ -1,6 +1,6 @@
 # Desk Companion Bot
 
-หุ่นเพื่อนบนโต๊ะสำหรับ ESP32 / Arduino / PlatformIO สเปกอ้างอิงใช้ **Waveshare 2inch LCD Module รุ่น 17344 / ST7789 240×320 (แนวนอน 320×240) ผ่าน hardware SPI**, TowerPro SG90 Digital และสัมผัสหัวด้วย DFRobot DFR0030 / TTP223 ใช้ดวงตาสื่ออารมณ์โดยไม่มีปาก ไม่มีเสียง และไม่มีรูม่านตาหรือจุดกลมภายในตา
+หุ่นเพื่อนบนโต๊ะสำหรับ ESP32 / Arduino / PlatformIO สเปกอ้างอิงใช้ **Waveshare 2inch LCD Module รุ่น 17344 / ST7789 240×320 (แนวนอน 320×240) ผ่าน hardware SPI**, TowerPro SG90 Digital, เซ็นเซอร์ระยะ **Pololu #3415 / VL53L1X ToF** และสัมผัสหัวด้วย DFRobot DFR0030 / TTP223 ใช้ดวงตาสื่ออารมณ์โดยไม่มีปาก ไม่มีเสียง และไม่มีรูม่านตาหรือจุดกลมภายในตา
 
 ![ห้าอารมณ์จาก renderer และ Adafruit GFX ที่เฟิร์มแวร์ใช้จริง](docs/eye-preview.png)
 
@@ -15,12 +15,13 @@
 ติดตั้ง PlatformIO IDE และ Wokwi Simulator ใน VS Code แล้วรัน:
 
 ```sh
-pio run -e esp32dev -e esp32vibecom13 -e esp32vibecom -e esp32sim
+pio run -e esp32dev -e esp32vibecom13 -e esp32vibecom_sonar -e esp32vibecom -e esp32sim
 ```
 
 | Environment | จอ | ใช้กับ |
 | --- | --- | --- |
-| `esp32vibecom` | Waveshare 17344 จอ IPS 2 นิ้ว แนวนอน + SG90 Digital | เครื่องจริง โมเดล v0.3 |
+| `esp32vibecom` | Waveshare 17344 จอ IPS 2 นิ้ว แนวนอน + SG90 Digital | เครื่องจริง โมเดล v0.4 / VL53L1X |
+| `esp32vibecom_sonar` | Waveshare 17344 จอ 2 นิ้ว + SG90 Digital | เครื่องจริง โมเดล v0.2–v0.3 / HC-SR04 เดิม |
 | `esp32vibecom13` | Waveshare 15867 จอ 1.3 นิ้ว + SG90 Digital | เครื่องจริง โมเดล v0.1 เดิม |
 | `esp32dev` | ST7789 240×240 แบบ 7 ขา + เซอร์โวเดิม | เครื่องจริง แบบเดิม |
 | `esp32sim` | ILI9341 320×240 แนวนอน | Wokwi เท่านั้น |
@@ -33,13 +34,13 @@ pio run -e esp32dev -e esp32vibecom13 -e esp32vibecom -e esp32sim
 
 Wokwi ใช้ **ILI9341 เป็นตัวแทนแสดงภาพสีด้วยไดรเวอร์ของมันเอง** ไม่ใช่โมเดล ST7789 และไม่ใช้ยืนยันการเริ่มทำงานหรือความเร็วของจอจริง ไม่ต้องซื้อ ILI9341 จอจำลองหมุนเป็นแนวนอน 320×240 ทั้งตัวจอและภาพ ใบหน้าตรรกะ 240×160 ขยายเป็น 320×214 อยู่กึ่งกลางที่ (0, 13) ส่วนจอจริง 2 นิ้ว ST7789 วางแนวนอน 320×240 และใช้ใบหน้าขยายเป็น 320×214 ที่ (0, 13); โปรไฟล์ 1.3 นิ้วเดิมยังเป็น 240×240 วางหน้าที่ (0, 40)
 
-คลิก HC-SR04 เพื่อเปลี่ยนระยะ เริ่มที่ 100 cm สวิตช์ **TTP223 OUT (simulation)** เลื่อนขวา = แตะ HIGH เลื่อนซ้าย = ปล่อย LOW เป็นการจำลองสัญญาณ OUT ไม่ใช่ความจุไฟฟ้าของเซ็นเซอร์จริง
+คลิก HC-SR04 เพื่อเปลี่ยนระยะ เริ่มที่ 100 cm เป็นแหล่งป้อนระยะสำหรับทดสอบพฤติกรรมใน `esp32sim` เท่านั้น ไม่ได้จำลอง VL53L1X, I²C หรือความผิดพลาดทางแสง สวิตช์ **TTP223 OUT (simulation)** เลื่อนขวา = แตะ HIGH เลื่อนซ้าย = ปล่อย LOW เป็นการจำลองสัญญาณ OUT ไม่ใช่ความจุไฟฟ้าของเซ็นเซอร์จริง
 
 ## โมเดล 3D และรุ่นอ้างอิง
 
 ![Vibecom enclosure prototype](mechanical/exports/vibecom-assembled.png)
 
-มีไฟล์ **BLEND / GLB / STL แยก 6 ชิ้น** พร้อมภาพแยกชิ้นส่วนและสคริปต์สร้างโมเดล รุ่น v0.3 หัวมนใหญ่นั่งชิดตัวเตี้ยสีเขียวอ่อน เท้าเล็กสีชมพูอิฐ ซ่อนข้อต่อหมุนไว้ในหัว เหลือรอยต่อ 0.8 มม. ขนาดรวมประมาณ 76 × 65 × 105 มม. อ่าน [รุ่นอุปกรณ์ วิธีเปิดไฟล์ และข้อจำกัดการประกอบ](mechanical/README.md)
+มีไฟล์ **BLEND / GLB / STL แยก 6 ชิ้น** พร้อมภาพแยกชิ้นส่วนและสคริปต์สร้างโมเดล รุ่น v0.4 หัวมนใหญ่นั่งชิดตัวเตี้ยสีเขียวอ่อน เท้าเล็กสีชมพูอิฐ ซ่อนข้อต่อหมุนไว้ในหัว เหลือรอยต่อ 0.8 มม. เปลี่ยนกระบอกเซ็นเซอร์คู่เป็นช่อง ToF เล็ก 8 × 6 มม. ที่อก ขนาดรวมประมาณ 76 × 62 × 105 มม. อ่าน [รุ่นอุปกรณ์ วิธีเปิดไฟล์ และข้อจำกัดการประกอบ](mechanical/README.md)
 
 แบบนี้เป็นต้นแบบตรวจขนาด ยังไม่ได้พิมพ์หรือประกอบจริง ตำแหน่งรูยึด/หัวต่อ/horn และการเดินสายต้องยืนยันกับอุปกรณ์ที่ซื้อก่อนพิมพ์ครบชุด
 
@@ -67,12 +68,22 @@ Wokwi ใช้ **ILI9341 เป็นตัวแทนแสดงภาพส
 | อุปกรณ์ | ขา | ESP32 |
 | --- | --- | --- |
 | DFR0030 / TTP223 | VCC / GND / OUT | 3V3 / GND / GPIO 4 |
-| HC-SR04 | TRIG / ECHO | GPIO 5 / GPIO 19 |
-| HC-SR04 | VCC / GND | 5V / GND |
+| Pololu #3415 / VL53L1X (รุ่น v0.4) | VIN / GND | 3V3 / GND |
+| Pololu #3415 / VL53L1X (รุ่น v0.4) | SDA / SCL | GPIO 21 / GPIO 22 |
+| HC-SR04 (โปรไฟล์เดิม/จำลอง) | TRIG / ECHO | GPIO 5 / GPIO 19 |
+| HC-SR04 (โปรไฟล์เดิม/จำลอง) | VCC / GND | 5V / GND |
 | SG90 Digital (รุ่นอ้างอิง) / Servo เดิม | PWM | GPIO 18 |
 | Servo | V+ / GND | แหล่งจ่าย 5V สำหรับมอเตอร์ / GND ร่วม |
 
 ตั้ง TTP223 เป็น **Direct / Momentary + Active HIGH** ไม่ใช้ Toggle ตรวจจัมเปอร์ตามโมดูล และปล่อยแผ่นสัมผัสว่างอย่างน้อย 1 วินาทีตอนเปิดเครื่อง โค้ดใช้ `INPUT_PULLDOWN` และกรองสัญญาณนิ่ง 25 ms แยกแตะครั้งเดียว แตะสองครั้ง และแตะค้างได้ แต่ไม่แยกทิศทางหรือความแรงการลูบ
+
+**รุ่นปัจจุบัน:** ใช้ carrier Pololu #3415 ที่มี regulator/level shifter ไม่ใช่ชิปเปล่า จ่าย VIN จาก **3V3** เพื่อให้ pull-up ของ SDA/SCL อยู่ที่ 3.3V ขา VDD เป็นเอาต์พุต regulator ไม่ใช่ขา VIN ขา XSHUT/GPIO1 ไม่ต้องต่อเมื่อใช้ตัวเดียว ที่อยู่ I²C เริ่มต้น `0x29`; GPIO5/19 ไม่ใช้ในโปรไฟล์ ToF [ข้อมูลและผังวงจรจาก Pololu](https://www.pololu.com/product/3415)
+
+เริ่มทำงานต้องเห็น `Distance sensor=VL53L1X READY` โค้ดใช้ Long mode, timing budget 50 ms, วัดทุก 80 ms และตรวจ data-ready ทุก 10 ms แล้ว `read(false)` จึงไม่รอรอบวัดในลูปภาพ; I²C transaction ยังใช้เวลาจริงและตั้ง timeout 10 ms รับเฉพาะ `RangeValid` ในช่วง 40–4000 mm แล้วแปลงเป็น cm ก่อนเข้าตัวกรองเดิม ค่าผิดพลาดจะไม่กลายเป็นระยะศูนย์; เมื่อไม่มีค่าถูกต้องเกิน 400 ms จะขึ้น `Distance=unavailable` และกลับพฤติกรรมไม่มีเป้าหมาย ทัชยังใช้ได้ ถ้าเริ่มเซ็นเซอร์ไม่สำเร็จจะรายงาน ERROR ให้ตรวจสายแล้วรีสตาร์ต หลังเซ็นเซอร์รีเซ็ตหรือไฟตกขณะทำงานให้รีสตาร์ตเพื่อเริ่มเซ็นเซอร์ใหม่ ไม่ได้ทำ blocking auto-init ในลูปภาพ
+
+ระยะ 4 เมตรเป็นค่าสูงสุดตามสภาพแสง/เป้าหมาย ไม่รับรองทุกพื้นผิว ช่องที่อกเป็นรูเปิด ไม่ปิดด้วยพลาสติกพิมพ์ทึบหรือกระจกที่ยังไม่ได้คาลิเบรต ไลบรารี [Pololu VL53L1X 1.3.1](https://github.com/pololu/vl53l1x-arduino) ที่ pin ไว้ไม่ได้จัดการ calibration สำหรับ cover glass ให้ครบ ต้องทดสอบแสง วัตถุ และช่องเปิดจริงก่อนประกอบ
+
+**ย้อนใช้ HC-SR04:** ใช้ `pio run -e esp32vibecom_sonar -t upload` และต่อ TRIG5/ECHO19 ตามรุ่นเดิม ทั้ง ToF และ sonar จอ 2 นิ้วใช้ namespace `vibecom2` และรูปแบบค่าตั้งเดิม จึงเก็บคาลิเบรตเซอร์โว/threshold ไว้ ไม่ลบ NVS เมื่อเปลี่ยนเซ็นเซอร์ ตัวถัง HC-SR04 อยู่ใน commit `a1484a8`; ตัวถัง v0.4 ไม่มีรูรับกระบอกคู่แล้ว
 
 HC-SR04 จริงส่ง ECHO 5V ต้องลดระดับก่อนเข้า ESP32 เช่น ECHO → R 1 kΩ → GPIO 19 และ GPIO 19 → R 2 kΩ → GND ส่วน Wokwi ต่อ ECHO ตรงตามโมเดลจำลอง
 
@@ -158,7 +169,7 @@ Serial แสดง `FPS draw` (สร้างภาพ), `TFT` (ภาพเ�
 ## ตรวจสอบ
 
 ```sh
-pio run -e esp32dev -e esp32vibecom13 -e esp32vibecom -e esp32sim
+pio run -e esp32dev -e esp32vibecom13 -e esp32vibecom_sonar -e esp32vibecom -e esp32sim
 python tests/run_render_checks.py
 ```
 
@@ -166,7 +177,7 @@ Host test ใช้ **behavior, ท่าทาง, renderer และ Adafruit 
 
 ส่วนภาพตรวจ 605 เฟรม Angry ระหว่างเปลี่ยนอารมณ์/กะพริบ และ 976 เฟรมของท่าทางร่วมกับอารมณ์ ตรวจตายังมองเห็น ไม่มีรอยยิ้มจากอารมณ์เก่าแทรก และ Happy/Love ต่างกันทั้งรูปทรง เพิ่มการตรวจ pixel ทุกตำแหน่งหลังขยาย 4:3 ความต่อเนื่องของทุกแถบ และ guard ปลายบัฟเฟอร์ รวมถึงบัฟเฟอร์อยู่ภายใน object, การเปลี่ยน palette, การขยายสี RGB565, ขอบเขตแถบภาพ และไม่มีปากทุกโหมด ไม่ใช้เฟรมเวิร์กทดสอบ
 
-GitHub Actions ใน `.github/workflows/checks.yml` build ทั้งสี่โปรไฟล์ รัน host checks ทั้ง legacy/reference/large และตรวจไฟล์ STL/GLB ที่ส่งออกจริง เมื่อ push / pull request หรือสั่งเอง ล็อก platform `espressif32 @ 7.1.3` ตามเวอร์ชันที่ตรวจบิลด์แล้ว ตรวจผล run ล่าสุดได้ในแท็บ Actions ของ repo; checker ไฟล์โมเดลใช้ Python มาตรฐานและไม่ต้องติดตั้ง Blender บน CI
+GitHub Actions ใน `.github/workflows/checks.yml` build ทั้งห้าโปรไฟล์ รัน host checks ทั้ง legacy/reference/large/ToF รวมการแปลงหน่วยและการปฏิเสธ status/bus/range ที่ผิด ตลอดจน stale timeout/reacquisition และตรวจไฟล์ STL/GLB ที่ส่งออกจริง เมื่อ push / pull request หรือสั่งเอง ล็อก platform `espressif32 @ 7.1.3` ตามเวอร์ชันที่ตรวจบิลด์แล้ว ตรวจผล run ล่าสุดได้ในแท็บ Actions ของ repo; checker ไฟล์โมเดลใช้ Python มาตรฐานและไม่ต้องติดตั้ง Blender บน CI
 
 ต้องมี g++ C++11 ขึ้นไป หรือระบุ `--compiler` สำหรับ Windows ติดตั้งได้ด้วย `pio pkg install --global --tool platformio/toolchain-gccmingw32` ไฟล์ `tests/host` แทนเฉพาะชนิดข้อมูล Arduino ที่ GFX ต้องการ ไม่ได้จำลองบัสหรือฮาร์ดแวร์
 
@@ -182,13 +193,15 @@ GitHub Actions ใน `.github/workflows/checks.yml` build ทั้งสี่
 6. ทดสอบแตะสั้นหนึ่งครั้งและสองครั้งที่ 100 cm ดู `Action=attention` / `Action=play`; เดินจาก 100 → 30 cm ดู `Action=greeting`
 7. ตั้งค่า → `save` → รีสตาร์ต ตรวจ `Settings: loaded.` และ `show` ว่าค่าตรง; ตรวจมุมคอทุกท่าไม่เกินช่วงที่ตั้ง
 8. ตรวจ `Display=READY` แล้วค่า FPS ขยับจากศูนย์ เครื่องจริงให้ตรวจสี การต่อขา ค่า TFT / SPI max ทุกโหมด และเซอร์โวยังตอบสนองระหว่างส่งจอ
+9. เครื่องจริง ToF: ตรวจ `VL53L1X READY`, วัดวัตถุ 10/30/100 cm หลายสีและหลายสภาพแสง ตรวจสัญญาณหายว่าไม่ค้าง Happy/Angry และยังแตะหัวได้; จำลองเซ็นเซอร์ไม่พร้อมโดยปิดไฟก่อนถอดสาย แล้วเปิดเครื่องเพื่อดู ERROR ทดสอบนี้ต้องใช้บอร์ดจริง Wokwi ไม่ได้ยืนยัน I²C/optics
 
-รุ่นก่อนการเพิ่ม gesture/settings เคยทดสอบ runtime ใน Wokwi for VS Code แล้ว: เริ่มแสดงตาได้, Idle/Sleepy, แตะเป็น Love และปล่อยมือที่ระยะ 10 cm กลับเป็น Angry โดยไม่มีปากและไม่มีรอยยิ้มค้าง เวอร์ชันปัจจุบันผ่าน build ทั้งสี่โปรไฟล์และ host checks แต่ยังต้องตรวจ runtime Wokwi ใหม่ตามรายการข้างบน รวมทั้งการบันทึกข้ามรีสตาร์ตบนบอร์ดจริง การเริ่มจอ ST7789 และ FPS ของฮาร์ดแวร์
+รุ่นก่อนการเพิ่ม gesture/settings เคยทดสอบ runtime ใน Wokwi for VS Code แล้ว: เริ่มแสดงตาได้, Idle/Sleepy, แตะเป็น Love และปล่อยมือที่ระยะ 10 cm กลับเป็น Angry โดยไม่มีปากและไม่มีรอยยิ้มค้าง เวอร์ชันปัจจุบันผ่าน build ทั้งห้าโปรไฟล์และ host checks แต่ยังต้องตรวจ runtime Wokwi ใหม่ตามรายการข้างบน รวมทั้ง VL53L1X จริง การบันทึกข้ามรีสตาร์ตบนบอร์ด การเริ่มจอ ST7789 และ FPS ของฮาร์ดแวร์
 
 ## ไฟล์และการย้อนกลับ
 
 - `src/main.cpp`: อินพุต อารมณ์ เซอร์โว SPI และสถิติ
 - `src/hardware.h`: โปรไฟล์จอ/เซอร์โว ขีดจำกัดคอและ namespace ค่าตั้ง
+- `src/distance_reading.h`: ตรวจ status/บัส/ขอบเขตค่า ToF และแปลง mm เป็น cm ก่อนกรอง
 - `mechanical/`: โมเดล 3D รุ่นอ้างอิง source และ checker
 - `src/behavior.h`: กรองระยะ อารมณ์ gesture ท่าทาง ค่าตั้งและการตรวจข้อมูล ใช้ร่วมกับ host test
 - `src/face.h`: renderer RGB565 ที่ใช้ร่วมกับ host test

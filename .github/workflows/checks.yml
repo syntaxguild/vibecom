@@ -11,6 +11,6 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install platformio==6.1.18
-      - run: pio run -e esp32dev -e esp32vibecom13 -e esp32vibecom -e esp32sim
+      - run: pio run -e esp32dev -e esp32vibecom13 -e esp32vibecom_sonar -e esp32vibecom -e esp32sim
       - run: python tests/run_render_checks.py
       - run: python mechanical/check_exports.py

@@ -8,7 +8,12 @@ constexpr int neckMin = 15, neckCenter = 75, neckMax = 135, neckLimit = 150;
 // Conservative initial PWM window; calibrate actual travel on the bench.
 constexpr int servoPulseMin = 1000, servoPulseMax = 2000;
 #ifdef VIBECOM_LARGE_SCREEN
+#ifdef VIBECOM_TOF
+constexpr const char *name = "Waveshare 17344 2-inch / SG90 Digital / Pololu 3415 VL53L1X";
+#else
 constexpr const char *name = "Waveshare 17344 2-inch / TowerPro SG90 Digital";
+#endif
+// Same servo and settings format: retain existing calibration during the ToF upgrade.
 constexpr const char *settingsNamespace = "vibecom2";
 #else
 constexpr const char *name = "Waveshare 15867 / TowerPro SG90 Digital";
