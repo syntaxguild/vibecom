@@ -38,10 +38,10 @@ def material(name, color, roughness=0.4, metallic=0):
     return mat
 
 
-ivory = material('Warm ivory polymer', (0.78, 0.75, 0.67))
+ivory = material('Warm ivory polymer', (0.72, 0.65, 0.53))
 graphite = material('Continuous black visor', (0, 0, 0), 0.6)
-rubber = material('Soft blush feet', (0.63, 0.37, 0.31), 0.65)
-sage = material('Soft sage body', (0.39, 0.55, 0.46), 0.5)
+rubber = material('Terracotta feet', (0.40, 0.19, 0.12), 0.65)
+# Shared shell material makes the character read as one soft form.
 blue = material('Reference servo blue', (0.025, 0.16, 0.48))
 green = material('Reference PCB', (0.025, 0.20, 0.10))
 optical = material('ToF optical windows', (0.045, 0.025, 0.055), 0.18)
@@ -115,7 +115,7 @@ def paw(name, pos):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=48, ring_count=24, radius=1, location=pos)
     obj = bpy.context.object
     obj.name = name
-    obj.scale = (11, 16, 5)
+    obj.scale = (10, 18, 5)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     return obj
 
@@ -185,6 +185,7 @@ def clean_solid(obj):
 # Rounded companion: a larger pillow head, low bean body and two little paws.
 hw, hd, hh = E['head']
 hz = E['head_center'][2]
+lz = hz + E['display_offset_z']
 wall = E['wall']
 hr = E['head_radius']
 front_y, split_y = -hd/2, 12
@@ -194,13 +195,26 @@ joint_top = 54
 mount_top = joint_top+wall
 assert abs(head_bottom-body_top-E['head_body_gap']) < 1e-6
 assert E['head_body_gap'] > 0
-assert mount_top < hz-SPEC['components']['display']['pcb'][1]/2
+assert mount_top < lz-SPEC['components']['display']['pcb'][1]/2
+
+
+def head_form(name, dims, radius, edge_radius):
+    # A rounded frontal silhouette with a shallow edge roll keeps the chin
+    # low across the front, hiding the rotating joint instead of exposing it.
+    obj = rounded(name, dims, (0, 0, hz), radius)
+    bpy.context.view_layer.objects.active = obj
+    bevel = obj.modifiers.new('Rolled shell edge', 'BEVEL')
+    bevel.width = edge_radius
+    bevel.segments = 6
+    bevel.limit_method = 'ANGLE'
+    bpy.ops.object.modifier_apply(modifier=bevel.name)
+    return obj
 
 
 def hollow_head(name):
-    obj = softbox(name, (hw, hd, hh), (0, 0, hz), hr)
-    boolean(obj, softbox('Head cavity', (hw-2*wall, hd-2*wall, hh-2*wall),
-                         (0, 0, hz), hr-wall))
+    obj = head_form(name, (hw, hd, hh), hr, 3)
+    boolean(obj, head_form('Head cavity', (hw-2*wall, hd-2*wall, hh-2*wall),
+                           hr-wall, 1))
     return obj
 
 
@@ -214,7 +228,7 @@ for x in [-31, 31]:
 finish(rear, ivory)
 front = hollow_head('02_head_front')
 boolean(front, rounded('Open service rear', (200, 100, 200), (0, 62, hz), 0.01))
-boolean(front, rounded('LCD opening', (42, 12, 33), (0, front_y, hz), 2))
+boolean(front, rounded('LCD opening', (42, 12, 33), (0, front_y, lz), 2))
 # Recess the existing horn adapter into the lowered head. Only a running seam
 # remains above the torso; the head's entire underside clears it during yaw.
 boolean(front, cylinder('Recessed joint pocket', 14.5, 16, (0, -4, head_bottom)))
@@ -225,8 +239,7 @@ boolean(seat, rounded('Seat rear service clearance', (200, 100, 200),
                       (0, 61.8, hz), 0.01))
 # Trim just the new seat; intersecting the whole shell with its coincident
 # exterior would create ambiguous coplanar surfaces in the boolean solver.
-boolean(seat, softbox('Keep mounting seat inside head', (hw, hd, hh),
-                      (0, 0, hz), hr), 'INTERSECT')
+boolean(seat, head_form('Keep mounting seat inside head', (hw, hd, hh), hr, 3), 'INTERSECT')
 boolean(front, seat, 'UNION')
 for x in [-10, 10]:
     boolean(front, rounded('Internal mounting bridge', (12, 6, wall),
@@ -244,13 +257,13 @@ for x in [-31, 31]:
                                 12, (x, 8, z), 'Y'))
 lcd_pitch = SPEC['components']['display']['mount_pitch']
 for x in [-lcd_pitch[0]/2, lcd_pitch[0]/2]:
-    for z in [hz-lcd_pitch[1]/2, hz+lcd_pitch[1]/2]:
+    for z in [lz-lcd_pitch[1]/2, lz+lcd_pitch[1]/2]:
         boolean(front, cylinder('LCD standoff', 2.8, 3.4, (x, -19.4, z), 'Y'), 'UNION')
         boolean(front, cylinder('LCD pilot', 0.9, 8, (x, -19.4, z), 'Y'))
 finish(front, ivory)
-insert = rounded('03_face_insert', (58, 1.2, 42), (0, front_y-0.6, hz), 11)
+insert = rounded('03_face_insert', (66, 0.8, 44), (0, front_y-0.4, lz), 12)
 # Slight overlap masks the edge of the real 40.8 x 30.6 mm active area.
-boolean(insert, rounded('Seamless visor window', (40.4, 6, 30.2), (0, front_y, hz), 1.5))
+boolean(insert, rounded('Seamless visor window', (40.4, 6, 30.2), (0, front_y, lz), 1.5))
 finish(insert, graphite)
 
 bw, bd, bh = E['body']
@@ -272,8 +285,8 @@ for x in [-7.2, 7.2]:
     boolean(body, rounded('ToF edge guide', (3, 5.5, 21.2), (x, -26, 26.6), 0.5), 'UNION')
     # Open towards the interior: raise the board through the base, then seat
     # it forwards. A captive vertical slot would obstruct this insertion path.
-    boolean(body, rounded('ToF PCB edge channel', (1.5, 12, 28),
-                           (math.copysign(6, x), -20.75, 21.2), 0.1))
+    boolean(body, rounded('ToF PCB edge channel', (1.5, 12, ph+0.8),
+                           (math.copysign(6, x), -20.75, tof_z), 0.1))
 # The DevKitC is now upright at the back; USB exits the right flank.
 boolean(body, rounded('Side USB service opening', (14, 12, 9), (bw/2, 16, 25), 2))
 for x in [-21, 21]:
@@ -281,11 +294,11 @@ for x in [-21, 21]:
         boolean(body, cylinder('Base closure boss', 3.5, 10, (x, y, 13)), 'UNION')
         boolean(body, cylinder('Base pilot', E['closure_pilot_diameter']/2, 12, (x, y, 13)))
 boolean(body, rounded('Open base', (200, 200, 200), (0, 0, -92), 0.01, 'XY'))
-finish(body, sage)
+finish(body, ivory)
 base = softbox('05_base_cover', (bw, bd, bh), (0, 0, bz), br)
 boolean(base, rounded('Keep base cap only', (200, 200, 200), (0, 0, 108), 0.01, 'XY'))
 for x in [-13, 13]:
-    boolean(base, paw('Little paw', (x, -12, 4)), 'UNION')
+    boolean(base, paw('Little paw', (x, -17, 4)), 'UNION')
 boolean(base, rounded('Flat soles', (200, 200, 100), (0, 0, -50), 0.01, 'XY'))
 boolean(base, rounded('Keep paw tops below base seam', (200, 200, 200),
                        (0, 0, 108), 0.01, 'XY'))
@@ -316,7 +329,7 @@ for x in [-10, 10]:
 finish(neck, graphite)
 
 # Purchased components are reference envelopes, excluded from the printable STLs.
-finish(rounded('REF_Waveshare_17344_PCB', (58, 1.6, 35), (0, -16.9, hz), 1), green, guides)
+finish(rounded('REF_Waveshare_17344_PCB', (58, 1.6, 35), (0, -16.9, lz), 1), green, guides)
 finish(rounded('REF_SG90_case', (23, 12.2, 29), (-5.5, -4, 29.1), 1, 'XY'), blue, guides)
 finish(rounded('REF_SG90_tabs', (32.3, 12.2, 2.5), (-5.5, -4, 42.35), 1, 'XY'), blue, guides)
 finish(rounded('REF_DevKitC_PCB', (48.26, 1.6, 27.94), (0, 16, 25), 1), green, guides)
@@ -328,12 +341,12 @@ finish(rounded('ToF sensor package reference', (4.9, 1.2, 2.5),
 for x in [-1.25, 1.25]:
     finish(rounded('ToF optical window reference', (1.3, 0.05, 1.6),
                    (x, -26-pt/2-1.225, tof_z), 0.25), optical, visual)
-touch_marker = rounded('Soft touch marker visual', (14, 10, 0.2),
-                       (0, 0, hz+hh/2+0.1), 4, 'XY')
-finish(touch_marker, rubber, visual)
+touch_marker = rounded('Soft touch marker visual', (8, 3, 0.15),
+                       (0, 0, hz+hh/2+0.075), 1.4, 'XY')
+finish(touch_marker, ivory, visual)
 
 # The face is a texture of the firmware rasterizer, at the actual 40.8 x 30.6 mm active size.
-screen = rounded('LCD active area 40.8x30.6mm', (40.8, 0.05, 30.6), (0, front_y-0.07, hz), 0.1)
+screen = rounded('LCD active area 40.8x30.6mm', (40.8, 0.05, 30.6), (0, front_y-0.72, lz), 0.1)
 texture = bpy.data.materials.new('Firmware idle screen')
 texture.use_nodes = True
 nodes = texture.node_tree.nodes
@@ -359,7 +372,7 @@ report = {'revision': SPEC['revision'], 'units': 'mm', 'parts': [],
           'joint': {'head_body_gap_mm': round(head_bottom-body_top, 3),
                     'adapter_flange_top_mm': joint_top,
                     'internal_mount_top_mm': mount_top,
-                    'display_pcb_bottom_mm': hz-SPEC['components']['display']['pcb'][1]/2}}
+                    'display_pcb_bottom_mm': lz-SPEC['components']['display']['pcb'][1]/2}}
 for obj in parts:
     clean_solid(obj)
     bm = bmesh.new()
@@ -426,7 +439,9 @@ bpy.context.view_layer.objects.active = assembly
 bpy.ops.export_scene.gltf(filepath=str(OUT / 'vibecom.glb'), export_format='GLB', use_selection=True)
 
 # Soft studio renders are generated from these meshes, never AI image stand-ins.
-scene.render.engine = 'BLENDER_EEVEE'
+scene.render.engine = 'CYCLES'
+scene.cycles.samples = 32
+scene.cycles.use_denoising = True
 scene.render.resolution_x = 1400
 scene.render.resolution_y = 1400
 scene.render.resolution_percentage = 100
@@ -434,11 +449,11 @@ scene.render.image_settings.file_format = 'PNG'
 scene.render.film_transparent = False
 scene.world.color = (0.42, 0.42, 0.42)
 scene.view_settings.view_transform = 'AgX'
-scene.view_settings.exposure = -1.2
+scene.view_settings.exposure = -0.8
 bpy.ops.mesh.primitive_plane_add(size=200, location=(0, 0, -0.0005))
 floor = bpy.context.object
 floor.name = 'Studio floor (not a part)'
-floor.data.materials.append(material('Studio sand', (0.68, 0.64, 0.57), 0.8))
+floor.data.materials.append(material('Studio eucalyptus', (0.24, 0.30, 0.29), 0.8))
 
 
 def aim(obj, target):
@@ -457,9 +472,9 @@ for name, location, power, size in [('Key', (0.12, -0.18, 0.30), 12, 0.22),
 camera_data = bpy.data.cameras.new('Camera')
 camera = bpy.data.objects.new('Camera', camera_data)
 bpy.context.collection.objects.link(camera)
-camera.location = (0.15, -0.34, 0.16)
+camera.location = (0.12, -0.36, 0.13)
 camera_data.type = 'ORTHO'
-camera_data.ortho_scale = 0.175
+camera_data.ortho_scale = 0.155
 camera_data.clip_start = 0.001
 camera_data.clip_end = 20
 aim(camera, (0, 0, (hz+hh/2)/2000))

@@ -1,17 +1,17 @@
 {
-  "revision": "v0.4-compact-tof",
+  "revision": "v0.5-mochi",
   "units": "mm",
   "status": "Dimensioned prototype; physical fit, fasteners, horn and cable travel need validation",
   "enclosure": {
     "head": [
-      76,
+      80,
       46,
-      58
+      54
     ],
     "head_center": [
       0,
       0,
-      75.8
+      73.8
     ],
     "body": [
       62,
@@ -30,14 +30,18 @@
     ],
     "closure_hole_diameter": 2.4,
     "closure_pilot_diameter": 1.8,
-    "tof_aperture": [8, 6],
+    "tof_aperture": [
+      8,
+      6
+    ],
     "tof_center_z": 26,
     "neck_bore": 12,
     "touch_roof": 1.0,
     "fit_clearance": 0.4,
-    "head_radius": 13,
+    "head_radius": 12,
     "body_radius": 17,
-    "head_body_gap": 0.8
+    "head_body_gap": 0.8,
+    "display_offset_z": 2
   },
   "components": {
     "display": {
@@ -86,8 +90,16 @@
     },
     "distance": {
       "model": "Pololu #3415 VL53L1X carrier (irs11a)",
-      "pcb": [12.7, 17.8, 1.02],
-      "envelope": [13, 18, 2.3],
+      "pcb": [
+        12.7,
+        17.8,
+        1.02
+      ],
+      "envelope": [
+        13,
+        18,
+        2.3
+      ],
       "mount": "Rear-open PCB seats in body; base supports PCB from below; secure rear with suitable adhesive after fit test",
       "optical_alignment_status": "Sensor center aligned to aperture provisionally; verify board orientation, connector clearance and FoV on the purchased board",
       "cover": "Open air aperture; no opaque printed cover or uncalibrated cover glass",

@@ -1,31 +1,31 @@
 {
-  "revision": "v0.4-compact-tof",
+  "revision": "v0.5-mochi",
   "units": "mm",
   "parts": [
     {
       "file": "01_head_rear.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 12005.958
+      "volume_mm3": 14534.227
     },
     {
       "file": "02_head_front.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 23336.412
+      "volume_mm3": 26378.102
     },
     {
       "file": "03_face_insert.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 1335.504
+      "volume_mm3": 1248.776
     },
     {
       "file": "04_body_shell.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 23894.06
+      "volume_mm3": 23937.124
     },
     {
       "file": "05_base_cover.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 12601.059
+      "volume_mm3": 13285.109
     },
     {
       "file": "06_neck_horn_adapter.stl",
@@ -70,8 +70,8 @@
     ]
   },
   "source_sha256": {
-    "reference.json": "3806dc4da755eaec8fcfec7f2989be90b04161a4f6724f4e95d18931ab8162ae",
-    "build_model.py": "7656240f4b77990a4c4f7163f3493f62c6d640cd034eddf3cfc3c3d397f3be9d",
+    "reference.json": "a57dd7c209a8e7b2d411a7e1ac26e0d5f3d0b8fd72ff1b13b937890ca0409702",
+    "build_model.py": "a627842718775267ecc3155d27f0424ecbd5957cda63325011b97e71969b55ec",
     "../docs/eye-preview.png": "45b6115c2a1331e801bbfe7b9da8396837f518dd186d90c37bcdd3d8a7e50a09"
   }
 }
