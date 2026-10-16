@@ -3,3 +3,7 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 *.vcd
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db

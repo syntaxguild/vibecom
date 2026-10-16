@@ -3,3 +3,6 @@ mechanical/*.py text eol=lf
 mechanical/*.json text eol=lf
 sim/*.c text eol=lf
 sim/*.json text eol=lf
+scripts/*.py text eol=lf
+*.md text eol=lf
+VERSION text eol=lf
