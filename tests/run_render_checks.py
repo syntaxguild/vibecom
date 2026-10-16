@@ -1,4 +1,4 @@
-"""Compile the production renderer + real GFX on the host; optionally regenerate previews."""
+"""Check production behavior + renderer on the host; optionally regenerate previews."""
 import argparse
 import os
 from pathlib import Path
@@ -24,6 +24,11 @@ output.mkdir(parents=True, exist_ok=True)
 executable = output / ('face-check.exe' if os.name == 'nt' else 'face-check')
 environment = dict(os.environ)
 environment['PATH'] = str(Path(compiler).parent) + os.pathsep + environment.get('PATH', '')
+behavior_executable = output / ('behavior-check.exe' if os.name == 'nt' else 'behavior-check')
+subprocess.run([compiler, '-std=c++11', '-O2', '-Wall', '-Wextra',
+                '-I' + str(root / 'src'), str(root / 'tests/behavior_checks.cpp'),
+                '-o', str(behavior_executable)], check=True, env=environment)
+subprocess.run([str(behavior_executable)], check=True, env=environment)
 subprocess.run([compiler, '-std=c++11', '-O2', '-DARDUINO=10800',
                 '-I' + str(root / 'tests/host'), '-I' + str(root / 'src'),
                 '-I' + str(gfx.parent), str(root / 'tests/face_render.cpp'),
@@ -46,4 +51,14 @@ if args.preview:
     frames[0].save(root / 'docs/petting-preview.gif', save_all=True,
                    append_images=frames[1:], duration=[30, 30, 40] * 60, loop=0,
                    disposal=2)
-    print('Generated docs/eye-preview.png and docs/petting-preview.gif from the production rasterizer.')
+    events = []
+    labels = ['WAKE', 'GREETING', 'SINGLE TAP', 'DOUBLE TAP / PLAY']
+    for index in range(192):
+        with Image.open(output / f'event-{index}.ppm') as frame:
+            preview = frame.convert('RGB')
+        ImageDraw.Draw(preview).text((120, 16), labels[index // 48], fill='#c7d1da', anchor='mm')
+        events.append(preview)
+    durations = [round(ms / 48) for ms in [1100, 1600, 900, 1800] for _ in range(48)]
+    events[0].save(root / 'docs/interaction-preview.gif', save_all=True,
+                   append_images=events[1:], duration=durations, loop=0, disposal=2)
+    print('Generated eye, petting and interaction previews from production rendering/poses (not a hardware recording).')

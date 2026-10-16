@@ -69,7 +69,30 @@ int main(int argc, char **argv) {
     for (int y = 112; y < FACE_HEIGHT; ++y)
       for (int x = 100; x <= 140; ++x) assert(clean.getPixel(x, y) == 0);
   }
-  puts("PASS: inline frame storage, palette changes/RGB565 expansion, 605 Angry transition/blink frames, visible eyelids, mouth-free expressions");
+  for (Action action : {Action::Greeting, Action::Wake, Action::Attention, Action::Play}) {
+    for (int frame = 0; frame <= 60; ++frame) {
+      const ActionPose pose = actionPose(action, frame / 60.0f);
+      for (Mood mood : {Mood::Idle, Mood::Happy, Mood::Angry, Mood::Love}) {
+        face = {mood, mood == Mood::Happy ? 1.0f : 0, mood == Mood::Angry ? 1.0f : 0,
+                mood == Mood::Love ? 1.0f : 0, 0, pose.gazeX, pose.gazeY, pose.openness};
+        drawFace(clean, face, frame / 30.0f);
+        int visible = 0;
+        for (int y = 0; y < FACE_HEIGHT; ++y)
+          for (int x = 0; x < FACE_WIDTH; ++x) {
+            const uint8_t pixel = clean.getPixel(x, y);
+            assert(pixel < FACE_PALETTE_SIZE);
+            visible += pixel != 0;
+            if (y >= 112 && x >= 100 && x <= 140) assert(pixel == 0);
+          }
+        assert(visible > 0);
+      }
+    }
+  }
+  drawFace(clean, {Mood::Happy, 1, 0, 0, 0, 0, 0, 1}, 0);
+  drawFace(stale, {Mood::Love, 0, 0, 1, 0, 0, 0, 1}, 0);
+  // Expressions must differ in geometry as well as palette.
+  assert(memcmp(clean.getBuffer(), stale.getBuffer(), FACE_WIDTH * FACE_HEIGHT) != 0);
+  puts("PASS: inline frame storage, RGB565/dirty bands, 605 Angry frames, 976 event/mood frames, distinct Happy/Love, mouth-free expressions");
 
   if (argc < 2) return 0;
   const std::string output = argv[1];
@@ -97,5 +120,17 @@ int main(int argc, char **argv) {
     face = {touching ? Mood::Love : Mood::Idle, 0, 0, affection, 0, 0, 0, openness};
     drawFace(clean, face, seconds);
     saveFrame(clean, output + "/love-" + std::to_string(i) + ".ppm");
+  }
+  int eventFrame = 0;
+  for (Action action : {Action::Wake, Action::Greeting, Action::Attention, Action::Play}) {
+    for (int i = 0; i < 48; ++i) {
+      const float p = i / 47.0f;
+      const ActionPose pose = actionPose(action, p);
+      const bool happy = action == Action::Greeting || action == Action::Play;
+      face = {happy ? Mood::Happy : Mood::Idle, happy ? 1.0f : 0, 0, 0,
+              action == Action::Wake ? 1 - p : 0, pose.gazeX, pose.gazeY, pose.openness};
+      drawFace(clean, face, i / 30.0f);
+      saveFrame(clean, output + "/event-" + std::to_string(eventFrame++) + ".ppm");
+    }
   }
 }

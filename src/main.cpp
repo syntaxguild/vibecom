@@ -7,6 +7,7 @@
 #include <Adafruit_ST7789.h>
 #endif
 #include <ESP32Servo.h>
+#include <Preferences.h>
 #include <driver/gpio.h>
 #include <math.h>
 #include <string.h>
@@ -29,7 +30,7 @@ constexpr bool TFT_INVERT = true;
 constexpr uint8_t SERVO_PIN = 18, TRIG_PIN = 5, ECHO_PIN = 19;
 constexpr uint8_t PET_PIN = 4; // TTP223 OUT: HIGH while touched, LOW when released.
 constexpr uint32_t FRAME_US = 16667, SENSOR_PERIOD_US = 80000;
-constexpr uint32_t ECHO_TIMEOUT_US = 30000, SLEEP_AFTER_MS = 10000;
+constexpr uint32_t ECHO_TIMEOUT_US = 30000;
 constexpr float PI_F = 3.14159265f;
 
 enum class SonarPhase : uint8_t { Waiting, TriggerHigh, Listening };
@@ -44,20 +45,15 @@ FaceCanvas frameA, frameB;
 FaceCanvas *drawingFrame = &frameA, *sendingFrame = &frameB;
 uint16_t transferPixels[FACE_WIDTH * FACE_BAND_ROWS] = {};
 Servo neck;
-Mood mood = Mood::Idle;
-bool displayReady = false, sleeping = false, moodChanged = true;
-float distanceCm = -1.0f, movementAnchorCm = -1.0f;
+Companion bot;
+bool displayReady = false, moodChanged = true;
 float gazeX = 0, gazeY = 0, gazeTargetX = 0, gazeTargetY = 0;
 float happyBlend = 0, angryBlend = 0, loveBlend = 0, sleepBlend = 0;
 float neckAngle = 90;
-uint32_t lastInteractionMs = 0, nextGazeMs = 0, moodStartedMs = 0;
+uint32_t nextGazeMs = 0;
 uint32_t nextFrameUs = 0, previousFrameUs = 0, lastServoMs = 0;
 uint32_t blinkStartedMs = 0, nextBlinkMs = 0;
 bool blinking = false;
-
-// Filter the active-high touch signal; release leaves a short affectionate afterglow.
-bool rawPet = false, petHeld = false, petWasTouched = false;
-uint32_t petEdgeMs = 0, lastPetMs = 0;
 
 SonarPhase sonarPhase = SonarPhase::Waiting;
 uint32_t lastTriggerUs = 0, triggerStartedUs = 0, listeningStartedUs = 0;
@@ -83,6 +79,73 @@ float approach(float value, float target, float rate, float dt) {
   return value + (target - value) * (1.0f - expf(-rate * dt));
 }
 
+void showSettings() {
+  const Settings &s = bot.settings;
+  Serial.printf("Profile=%s | sleep=%.3f s | near=%.3f far=%.3f cm | neck min/center/max=%d/%d/%d\n",
+      personalityName(s.personality), s.sleepMs / 1000.0f, s.nearCm, s.farCm,
+      s.neckMin, s.neckCenter, s.neckMax);
+}
+
+void loadSettings() {
+  Preferences storage;
+  if (!storage.begin("deskbot", true)) {
+    Serial.println(F("Settings: using defaults (no saved namespace)."));
+    return;
+  }
+  SavedSettings data = {};
+  const bool loaded = storage.getBytesLength("settings") == sizeof(data) &&
+      storage.getBytes("settings", data.data(), sizeof(data)) == sizeof(data) &&
+      decodeSettings(data, bot.settings);
+  storage.end();
+  Serial.println(loaded ? F("Settings: loaded.") : F("Settings: missing/invalid, using defaults."));
+}
+
+void saveSettings() {
+  Preferences storage;
+  const SavedSettings data = encodeSettings(bot.settings);
+  bool saved = storage.begin("deskbot", false);
+  if (saved) {
+    saved = storage.putBytes("settings", data.data(), sizeof(data)) == sizeof(data);
+    storage.end();
+  }
+  Serial.println(saved ? F("Settings: saved; retained after restart.") : F("ERROR: settings save failed."));
+}
+
+void consoleCommand(const char *line) {
+  if (!strcmp(line, "help")) {
+    Serial.println(F("show | profile normal/affectionate/sleepy/grumpy | set KEY VALUE | save | reset"));
+    Serial.println(F("KEY: sleep (3..600 seconds), near/far (cm, 5 cm gap), neck_min/neck_center/neck_max (0..180)."));
+    Serial.println(F("Edits apply now; save persists. reset restores defaults in RAM; save to persist reset."));
+  } else if (!strcmp(line, "show")) showSettings();
+  else if (!strcmp(line, "save")) saveSettings();
+  else if (!strcmp(line, "reset") || editSettings(bot.settings, line)) {
+    if (!strcmp(line, "reset")) bot.settings = Settings{};
+    neckAngle = bot.clampNeck(neckAngle);
+    neck.write(static_cast<int>(lroundf(neckAngle)));
+    moodChanged = true;
+    showSettings();
+  } else Serial.println(F("ERROR: invalid command/value; unchanged. Type help."));
+}
+
+void serviceConsole() {
+  // NVS writes/command output may pause a frame, so do not run them during sonar capture.
+  if (sonarPhase != SonarPhase::Waiting) return;
+  static char line[96];
+  static size_t length = 0;
+  static bool overflow = false;
+  for (int budget = 0; budget < 32 && Serial.available(); ++budget) {
+    const char c = Serial.read();
+    if (c == '\r' || c == '\n') {
+      if (overflow) Serial.println(F("ERROR: command too long; discarded."));
+      else if (length) { line[length] = 0; consoleCommand(line); }
+      length = 0; overflow = false;
+    } else if (c >= 32 && c <= 126 && !overflow) {
+      if (length + 1 < sizeof(line)) line[length++] = c;
+      else overflow = true;
+    }
+  }
+}
+
 void IRAM_ATTR echoEdge() {
   const uint32_t now = micros();
   const bool high = gpio_get_level(static_cast<gpio_num_t>(ECHO_PIN));
@@ -98,16 +161,6 @@ void IRAM_ATTR echoEdge() {
     }
   }
   portEXIT_CRITICAL_ISR(&echoMux);
-}
-
-void acceptDistance(float cm, uint32_t nowMs) {
-  distanceCm = cm;
-  if (cm < 0) return;
-  if (cm <= 50.0f || movementAnchorCm < 0 ||
-      fabsf(cm - movementAnchorCm) >= 4.0f) {
-    lastInteractionMs = nowMs;
-    movementAnchorCm = cm;
-  }
 }
 
 // Returns true only during the 10 us trigger. The loop keeps polling that phase
@@ -131,13 +184,13 @@ bool serviceSonar(uint32_t nowUs, uint32_t nowMs) {
     portEXIT_CRITICAL(&echoMux);
     if (ready) {
       const float cm = duration / 58.0f;
-      acceptDistance(cm >= 2 && cm <= 400 ? cm : -1, nowMs);
+      bot.acceptDistance(cm >= 2 && cm <= 400 ? cm : -1, nowMs);
       sonarPhase = SonarPhase::Waiting;
     } else if (static_cast<uint32_t>(nowUs - listeningStartedUs) >= ECHO_TIMEOUT_US) {
       portENTER_CRITICAL(&echoMux);
       echoArmed = false;
       portEXIT_CRITICAL(&echoMux);
-      acceptDistance(-1, nowMs);
+      bot.acceptDistance(-1, nowMs);
       sonarPhase = SonarPhase::Waiting;
     }
   }
@@ -157,55 +210,32 @@ bool serviceSonar(uint32_t nowUs, uint32_t nowMs) {
   return false;
 }
 
-void servicePet(uint32_t now) {
-  const bool touched = digitalRead(PET_PIN) == HIGH;
-  if (touched != rawPet) {
-    rawPet = touched;
-    petEdgeMs = now;
-  }
-  if (static_cast<uint32_t>(now - petEdgeMs) >= 25) petHeld = rawPet;
-  if (petHeld) {
-    petWasTouched = true;
-    lastPetMs = now;
-    lastInteractionMs = now;
-  }
-}
-
-void updateMood(uint32_t now) {
-  Mood next = Mood::Idle;
-  if (petHeld || (petWasTouched && static_cast<uint32_t>(now - lastPetMs) < 1200)) {
-    next = Mood::Love; // Petting always wins, even inside personal space.
-  } else if (distanceCm >= 0 && distanceCm < 15) {
-    next = Mood::Angry;
-  } else if (distanceCm >= 15 && distanceCm <= 50) {
-    next = Mood::Happy;
-  }
-  if (next != mood) {
-    mood = next;
-    moodStartedMs = now;
+void updateBehavior(uint32_t now) {
+  const Mood previous = bot.mood;
+  const bool wasSleeping = bot.sleeping;
+  const Action previousAction = bot.action;
+  bot.update(digitalRead(PET_PIN) == HIGH, now);
+  if (bot.mood != previous) {
     blinking = false;
     nextBlinkMs = now + 2000;
-    moodChanged = true;
   }
-  const bool nextSleeping = mood == Mood::Idle &&
-      static_cast<uint32_t>(now - lastInteractionMs) >= SLEEP_AFTER_MS;
-  if (nextSleeping != sleeping) moodChanged = true;
-  sleeping = nextSleeping;
+  if (bot.mood != previous || bot.sleeping != wasSleeping || bot.action != previousAction)
+    moodChanged = true;
 }
 
 void renderFace(uint32_t nowMs, float dt) {
-  happyBlend = approach(happyBlend, mood == Mood::Happy ? 1 : 0, 12, dt);
-  angryBlend = approach(angryBlend, mood == Mood::Angry ? 1 : 0, 16, dt);
+  happyBlend = approach(happyBlend, bot.mood == Mood::Happy ? 1 : 0, 12, dt);
+  angryBlend = approach(angryBlend, bot.mood == Mood::Angry ? 1 : 0, 16, dt);
   // Ease into affection, then let it fade more slowly after the afterglow.
-  loveBlend = approach(loveBlend, mood == Mood::Love ? 1 : 0,
-                       mood == Mood::Love ? 4.0f : 2.4f, dt);
-  sleepBlend = approach(sleepBlend, sleeping ? 1 : 0, 3, dt);
+  loveBlend = approach(loveBlend, bot.mood == Mood::Love ? 1 : 0,
+                       bot.mood == Mood::Love ? 4.0f : 2.4f, dt);
+  sleepBlend = approach(sleepBlend, bot.sleeping ? 1 : 0, 3, dt);
   if (due(nowMs, nextGazeMs)) {
     gazeTargetX = random(-7, 8);
     gazeTargetY = random(-2, 3);
     nextGazeMs = nowMs + random(1000, 2400);
   }
-  const bool looking = mood == Mood::Idle && !sleeping;
+  const bool looking = bot.mood == Mood::Idle && !bot.sleeping;
   gazeX = approach(gazeX, looking ? gazeTargetX : 0, 4, dt);
   gazeY = approach(gazeY, looking ? gazeTargetY : 0, 4, dt);
   if (!blinking && due(nowMs, nextBlinkMs)) {
@@ -224,8 +254,9 @@ void renderFace(uint32_t nowMs, float dt) {
     }
   }
   if (!displayReady) return;
-  const FaceState face = {mood, happyBlend, angryBlend, loveBlend, sleepBlend,
-                          gazeX, gazeY, openness};
+  const ActionPose pose = actionPose(bot.action, bot.actionProgress(nowMs));
+  const FaceState face = {bot.mood, happyBlend, angryBlend, loveBlend, sleepBlend,
+                          gazeX + pose.gazeX, gazeY + pose.gazeY, openness * pose.openness};
   drawFace(*drawingFrame, face, nowMs * 0.001f);
   ++renderedGeneration;
   ++renderedCount;
@@ -270,19 +301,24 @@ void serviceNeck(uint32_t now) {
   if (static_cast<uint32_t>(now - lastServoMs) < 20) return;
   const float dt = min(0.1f, (now - lastServoMs) * 0.001f);
   lastServoMs = now;
-  const float phase = (now - moodStartedMs) * 0.001f;
-  float target = 90;
-  switch (mood) {
-    case Mood::Idle: target += sleeping ? 0 : gazeX; break;
-    case Mood::Happy: target += 38 * sinf(phase * 5.5f); break;
-    case Mood::Angry: target = 180; break;
+  const float phase = (now - bot.moodStartedMs) * 0.001f;
+  float target = bot.settings.neckCenter;
+  switch (bot.mood) {
+    case Mood::Idle: target += bot.sleeping ? 0 : gazeX; break;
+    case Mood::Happy: target += (bot.settings.personality == Personality::Sleepy ? 12 : 24) * sinf(phase * 4.2f); break;
+    case Mood::Angry: target = bot.settings.neckMax; break;
     case Mood::Love: break; // The affection blend below also eases the release.
   }
-  const float petTarget = 98 + 3 * sinf(now * 0.0021f);
-  target += (petTarget - target) * loveBlend;
-  const float rate = mood == Mood::Love ? 3.5f : mood == Mood::Angry ? 8 : 12;
+  const float petTarget = bot.settings.neckCenter + 8 + 3 * sinf(now * 0.0021f);
+  // Angry takes ownership immediately; fading affection must not turn the neck back.
+  if (bot.mood != Mood::Angry) target += (petTarget - target) * loveBlend;
+  const ActionPose pose = actionPose(bot.action, bot.actionProgress(now));
+  if (bot.mood != Mood::Angry && bot.mood != Mood::Love && bot.action != Action::None)
+    target = bot.settings.neckCenter + pose.neck;
+  const float rate = bot.mood == Mood::Love ? 3.5f : bot.mood == Mood::Angry ? 8 : 12;
   neckAngle = approach(neckAngle, target, rate, dt);
-  neck.write(constrain(static_cast<int>(lroundf(neckAngle)), 0, 180));
+  neckAngle = bot.clampNeck(neckAngle);
+  neck.write(static_cast<int>(lroundf(neckAngle)));
 }
 
 void serviceLog(uint32_t now) {
@@ -294,14 +330,14 @@ void serviceLog(uint32_t now) {
     statsStartedMs = now;
   }
   if (!moodChanged && static_cast<uint32_t>(now - lastLogMs) < 500) return;
-  const char *name = mood == Mood::Love ? "LOVE" : mood == Mood::Angry ? "ANGRY" :
-      mood == Mood::Happy ? "HAPPY" : sleeping ? "IDLE/SLEEPY" : "IDLE/LOOK";
+  const char *name = bot.mood == Mood::Love ? "LOVE" : bot.mood == Mood::Angry ? "ANGRY" :
+      bot.mood == Mood::Happy ? "HAPPY" : bot.sleeping ? "IDLE/SLEEPY" : "IDLE/LOOK";
   char cm[20], message[240];
-  if (distanceCm < 0) snprintf(cm, sizeof(cm), "no echo");
-  else snprintf(cm, sizeof(cm), "%.1f cm", distanceCm);
+  if (bot.distanceCm < 0) snprintf(cm, sizeof(cm), "no echo");
+  else snprintf(cm, sizeof(cm), "%.1f cm", bot.distanceCm);
   snprintf(message, sizeof(message),
-      "Distance=%s | %s | Pet=%s | Servo=%d | FPS draw=%.1f TFT=%.1f | skipped=%lu | SPI max=%.2f ms",
-      cm, name, petHeld ? "touched" : "off", static_cast<int>(lroundf(neckAngle)),
+      "Distance=%s | %s | Action=%s | Pet=%s | Servo=%d | FPS draw=%.1f TFT=%.1f | skipped=%lu | SPI max=%.2f ms",
+      cm, name, actionName(bot.action), bot.petHeld ? "touched" : "off", static_cast<int>(lroundf(neckAngle)),
       renderFps, presentFps, static_cast<unsigned long>(skippedCount), maxTransferUs * 0.001f);
   if (Serial.availableForWrite() >= static_cast<int>(strlen(message) + 2)) {
     Serial.println(message);
@@ -314,6 +350,8 @@ void serviceLog(uint32_t now) {
 void setup() {
   Serial.setTxBufferSize(1024);
   Serial.begin(115200);
+  loadSettings();
+  neckAngle = bot.settings.neckCenter;
   pinMode(TRIG_PIN, OUTPUT);
   digitalWrite(TRIG_PIN, LOW);
   pinMode(ECHO_PIN, INPUT);
@@ -338,24 +376,26 @@ void setup() {
   ESP32PWM::allocateTimer(0);
   neck.setPeriodHertz(50);
   neck.attach(SERVO_PIN, 500, 2500);
-  neck.write(90);
+  neck.write(bot.settings.neckCenter);
   if (!neck.attached()) Serial.println(F("ERROR: servo attachment failed."));
 
   const uint32_t now = millis();
-  lastInteractionMs = moodStartedMs = lastServoMs = statsStartedMs = now;
+  bot.begin(now);
+  lastServoMs = statsStartedMs = now;
   nextBlinkMs = now + 2400;
   previousFrameUs = micros();
   nextFrameUs = previousFrameUs;
   lastTriggerUs = previousFrameUs; // Let the sensor settle for 80 ms.
-  Serial.println(F("Desk Companion Bot: 60 Hz color face, SPI TFT, 4 moods, TTP223 GPIO4."));
+  Serial.println(F("Desk Companion Bot: filtered distance, gestures, personalities. Type help + Enter."));
+  showSettings();
 }
 
 void loop() {
   const uint32_t nowUs = micros();
   const uint32_t nowMs = millis();
   if (serviceSonar(nowUs, nowMs)) return;
-  servicePet(nowMs);
-  updateMood(nowMs);
+  updateBehavior(nowMs);
+  serviceConsole();
   serviceNeck(nowMs);
   if (due(nowUs, nextFrameUs)) {
     const float dt = min(0.1f, (nowUs - previousFrameUs) * 0.000001f);

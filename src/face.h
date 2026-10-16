@@ -2,8 +2,8 @@
 #include <Adafruit_GFX.h>
 #include <math.h>
 #include <string.h>
+#include "behavior.h"
 
-enum class Mood : uint8_t { Idle, Happy, Angry, Love };
 constexpr int16_t FACE_WIDTH = 240, FACE_HEIGHT = 160;
 constexpr uint8_t FACE_BAND_ROWS = 8;
 constexpr uint8_t FACE_PALETTE_SIZE = 5;
@@ -113,8 +113,9 @@ inline void drawFace(FaceCanvas &canvas, const FaceState &face, float seconds) {
   const float love = angry ? 0 : face.love;
   const float sleep = angry ? 0 : face.sleep;
   const float anger = angry ? (face.mood == Mood::Angry ? max(0.65f, face.angry) : face.angry) : 0;
-  const float smile = max(happy, 0.82f * love);
-  const float relaxed = love * (0.18f + 0.03f * sinf(seconds * 1.8f));
+  // Happy is wide and bouncy; Love keeps a softer, visibly different half lid.
+  const float smile = max(happy * (1 - love), 0.56f * love);
+  const float relaxed = love * (0.38f + 0.03f * sinf(seconds * 1.8f));
   uint16_t color = mixColor(rgb(115, 228, 227), rgb(255, 215, 121), happy);
   color = mixColor(color, rgb(255, 173, 202), love);
   color = mixColor(color, rgb(255, 99, 92), anger);
@@ -134,7 +135,7 @@ inline void drawFace(FaceCanvas &canvas, const FaceState &face, float seconds) {
   const int16_t lift = lroundf(love * (-3 + sinf(seconds * 1.8f)));
   const int16_t offsetX = lroundf(face.gazeX * 1.5f) + shakeX + sway;
   const int16_t centerY = 65 + lroundf(face.gazeY * 1.5f + sinf(seconds * 2) +
-      2 * happy * sinf(seconds * 9)) + shakeY + lift;
+      3 * happy * (1 - love) * sinf(seconds * 9)) + shakeY + lift;
   canvas.fillScreen(0);
   drawEye(canvas, 72 + offsetX, centerY - tilt, true, smile, anger, relaxed,
           sleep, face.openness, color);
