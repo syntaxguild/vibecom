@@ -1,5 +1,5 @@
 {
-  "revision": "v0.5-mochi",
+  "revision": "v0.6-fit-corrections",
   "units": "mm",
   "parts": [
     {
@@ -10,7 +10,7 @@
     {
       "file": "02_head_front.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 26378.102
+      "volume_mm3": 25920.885
     },
     {
       "file": "03_face_insert.stl",
@@ -20,12 +20,12 @@
     {
       "file": "04_body_shell.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 23937.124
+      "volume_mm3": 27156.762
     },
     {
       "file": "05_base_cover.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 13285.109
+      "volume_mm3": 15499.996
     },
     {
       "file": "06_neck_horn_adapter.stl",
@@ -65,13 +65,13 @@
   "tof_aperture": {
     "clear_reference_rays": 36,
     "aperture_mm": [
-      8,
-      6
+      9,
+      6.5
     ]
   },
   "source_sha256": {
-    "reference.json": "a57dd7c209a8e7b2d411a7e1ac26e0d5f3d0b8fd72ff1b13b937890ca0409702",
-    "build_model.py": "a627842718775267ecc3155d27f0424ecbd5957cda63325011b97e71969b55ec",
+    "reference.json": "393a4c49fea4875998bec2f796cda6cb1ef433f972576988a662e3a1805d35e3",
+    "build_model.py": "ee98aee7ca39f28bce3cd4c3fcd705fc0a6d4cd6efc7ba1298658113b81feb40",
     "../docs/eye-preview.png": "45b6115c2a1331e801bbfe7b9da8396837f518dd186d90c37bcdd3d8a7e50a09"
   }
 }

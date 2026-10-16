@@ -73,3 +73,13 @@ assert any(all(abs(value - 0.001) < 1e-8 for value in node.get('scale', [1, 1, 1
 for name in ['vibecom.blend', 'vibecom-assembled.png', 'vibecom-happy.png', 'vibecom-exploded.png']:
     assert (out / name).stat().st_size > 1000, name
 print('PASS: source fingerprints, GLB container/scale, editable BLEND and rendered previews')
+
+# The geometry audit must describe this exact assembly and its current script.
+audit = json.loads((root/'audit/assembly-audit.json').read_text(encoding='utf-8'))
+assert audit['revision'] == spec['revision']
+assert audit['blend_sha256'] == hashlib.sha256((out/'vibecom.blend').read_bytes()).hexdigest()
+assert audit['audit_script_sha256'] == hashlib.sha256((root/'audit_assembly.py').read_bytes()).hexdigest()
+assert audit['geometry_gate_passed'], 'Regenerate/fix the assembly audit'
+assert not audit['existing_envelope_overlaps'] and not audit['provisional_proxy_overlaps']
+assert len(audit['base_fasteners']) == 4 and all(f['through_hole_clear'] and f['support_under_screw_head'] for f in audit['base_fasteners'])
+print('PASS: current assembly audit, connector reservations, sampled insertion paths and four base screw pads')

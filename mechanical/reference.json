@@ -1,5 +1,5 @@
 {
-  "revision": "v0.5-mochi",
+  "revision": "v0.6-fit-corrections",
   "units": "mm",
   "status": "Dimensioned prototype; physical fit, fasteners, horn and cable travel need validation",
   "enclosure": {
@@ -14,7 +14,7 @@
       73.8
     ],
     "body": [
-      62,
+      70,
       62,
       42
     ],
@@ -31,15 +31,15 @@
     "closure_hole_diameter": 2.4,
     "closure_pilot_diameter": 1.8,
     "tof_aperture": [
-      8,
-      6
+      9,
+      6.5
     ],
     "tof_center_z": 26,
     "neck_bore": 12,
     "touch_roof": 1.0,
     "fit_clearance": 0.4,
     "head_radius": 12,
-    "body_radius": 17,
+    "body_radius": 15,
     "head_body_gap": 0.8,
     "display_offset_z": 2
   },
@@ -58,7 +58,7 @@
         53,
         30
       ],
-      "mount_pitch_status": "Provisional; confirm on the purchased board",
+      "mount_pitch_status": "Confirmed 53 x 30 mm from manufacturer 2D drawing; verify purchased board",
       "source": "https://docs.waveshare.net/2inch_LCD_Module/"
     },
     "servo": {
@@ -76,9 +76,15 @@
       "model": "Espressif ESP32-DevKitC V4 / ESP32-WROOM-32E",
       "pcb": [
         27.94,
-        48.26
+        54.3
       ],
-      "source": "https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_dimensions.pdf"
+      "source": "https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_dimensions.pdf",
+      "main_pcb_length": 48.26,
+      "antenna_extension": [
+        6.04,
+        18
+      ],
+      "outline_status": "Manufacturer T-shaped outline; 48.26 mm main PCB plus 6.04 mm antenna extension, thickness assumed 1.6 mm"
     },
     "touch": {
       "model": "DFRobot Gravity Digital Capacitive Touch Sensor DFR0030 / TTP223-BA6",
@@ -104,7 +110,22 @@
       "optical_alignment_status": "Sensor center aligned to aperture provisionally; verify board orientation, connector clearance and FoV on the purchased board",
       "cover": "Open air aperture; no opaque printed cover or uncalibrated cover glass",
       "source": "https://www.pololu.com/product/3415",
-      "drawing": "https://www.pololu.com/file/0J1194/vl53l0x-vl53l1x-vl53l3cx-vl53l4cd-carrier-dimension-diagram.pdf"
+      "drawing": "https://www.pololu.com/file/0J1194/vl53l0x-vl53l1x-vl53l3cx-vl53l4cd-carrier-dimension-diagram.pdf",
+      "sensor_offset_x": 0.55
     }
+  },
+  "assembly": {
+    "base_boss_x": 23,
+    "base_boss_y": 22,
+    "servo_case_z": 27.1,
+    "servo_tab_z": 40.35,
+    "servo_mount_x": [
+      -19.3,
+      8.3
+    ],
+    "servo_mount_status": "Adjustable slots for provisional tab-hole positions; measure actual SG90, horn and shaft stack before final printing",
+    "controller_headers": "Reserve 8.5 mm depth towards body interior; selected plugs and wire bend radius still require physical validation",
+    "lcd_stack": "4 mm backlight envelope at Y=-19.7; PCB at Y=-16.9; exact optical stack and AA horizontal offset require purchased module measurement",
+    "wiring": "LCD PH connector faces interior; body PCB headers face interior; ToF solder wires exit towards body interior. Loose service loops through concealed side joint port; no certified bend-radius model."
   }
 }

@@ -7,8 +7,10 @@ import bpy
 import bmesh
 import hashlib
 import json
+import math
+import sys
 from pathlib import Path
-from mathutils import Matrix
+from mathutils import Matrix, Vector
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / 'audit'
@@ -78,10 +80,8 @@ for index, first in enumerate(guides):
         if volume > 0.01:
             checks.append({'first': first, 'second': second, 'overlap_mm3': volume})
 
-# Espressif drawing dimension 48.26 excludes the 6.04 mm antenna overhang.
-# Keep the existing USB end at X=24.13 and extend the RF end towards -X.
+# Remaining proxies reserve connector and backlight space beyond the PCB guides.
 proxies = [
-    ('PROBE_DevKitC_antenna_extension', (6.04, 1.6, 18), (-27.15, 16, 25), 'Manufacturer T-shaped antenna extension; 1.6 mm thickness is assumed'),
     ('PROBE_DevKitC_header_upper', (48.26, 8.5, 2.54), (0, 10.95, 37.7), 'Assumed header/socket height; not a selected connector'),
     ('PROBE_DevKitC_header_lower', (48.26, 8.5, 2.54), (0, 10.95, 12.3), 'Assumed header/socket height; not a selected connector'),
     ('PROBE_USB_plug_keepout', (20, 12, 8), (30, 16, 25), 'Provisional plug shell envelope; cable/plug not selected'),
@@ -110,6 +110,69 @@ for y in [-20, -22, -24, -26]:
     path_checks.append({'y': y, 'z': 26, 'overlap_mm3': overlap(tof, objects['04_body_shell'])})
 tof.location = (0, 0, 0)
 
+# Insert the controller before the servo. Rotate in XY to pass the base opening,
+# then turn it back and move to its rear cradles. Include header reservations.
+controller_path = []
+controller_parts = [obj for name,obj in objects.items() if name.startswith('REF_DevKitC_')]
+poses = [(0,3,z,40) for z in list(range(-12,25,2))+[25]]
+poses += [(0,3+13*t,25,40*(1-t)) for t in [i/12 for i in range(1,13)]]
+for x,y,z,yaw in poses:
+    matrix = Matrix.Translation(Vector((x,y,z))) @ Matrix.Rotation(math.radians(yaw),4,'Z') @ Matrix.Translation(Vector((0,-16,-25)))
+    volumes = []
+    for obj in controller_parts:
+        obj.matrix_world = matrix
+        volumes.append(overlap(obj,objects['04_body_shell']))
+        obj.matrix_world = Matrix.Identity(4)
+    controller_path.append({'center_mm':[x,y,z], 'yaw_deg':yaw,'overlap_mm3':round(sum(volumes),4)})
+servo_path = []
+for delta_z in [-40,-32,-24,-16,-8,0]:
+    volumes = []
+    for name in ['REF_SG90_case','REF_SG90_tabs']:
+        obj = objects[name]
+        obj.location.z = delta_z
+        volumes.append(overlap(obj,objects['04_body_shell']))
+        obj.location.z = 0
+    servo_path.append({'delta_z':delta_z,'overlap_mm3':round(sum(volumes),4)})
+
+# Tilt LCD assembly 45 degrees through the rear closure bosses, straighten
+# inside the head, then move forwards onto the display standoffs.
+lcd_parts = [obj for name,obj in objects.items() if name.startswith('REF_Waveshare_17344_')]
+lcd_proxy = box('LCD stack insertion reservation',(47.83,4,34.6),(0,-19.7,75.8))
+lcd_parts.append(lcd_proxy)
+lcd_poses = [(y,45) for y in range(35,-5,-3)]
+lcd_poses += [(-4,angle) for angle in [40,35,30,25,20,15,10,5,0]]
+lcd_poses += [(y,0) for y in [-7,-10,-13,-16.9]]
+lcd_path = []
+for y,tilt in lcd_poses:
+    matrix = Matrix.Translation(Vector((0,y,75.8))) @ Matrix.Rotation(math.radians(tilt),4,'X') @ Matrix.Translation(Vector((0,16.9,-75.8)))
+    volumes = []
+    for obj in lcd_parts:
+        obj.matrix_world = matrix @ Matrix.Translation(Vector((0,-19.7,75.8))) if obj == lcd_proxy else matrix
+        volumes.append(overlap(obj,objects['02_head_front']))
+        obj.matrix_world = Matrix.Translation(Vector((0,-19.7,75.8))) if obj == lcd_proxy else Matrix.Identity(4)
+    lcd_path.append({'pcb_center_y':y,'tilt_deg':tilt,'overlap_mm3':round(sum(volumes),4)})
+bpy.data.objects.remove(lcd_proxy,do_unlink=True)
+touch_path = []
+touch_parts = [obj for name,obj in objects.items() if name.startswith('REF_DFR0030_')]
+for y,dz in [(y,-2.8) for y in range(30,-1,-3)]+[(0,-1.4),(0,0)]:
+    volumes = []
+    for obj in touch_parts:
+        obj.location = (0,y,dz)
+        volumes.append(overlap(obj,objects['02_head_front']))
+        obj.location = (0,0,0)
+    touch_path.append({'delta_y':y,'delta_z':dz,'overlap_mm3':round(sum(volumes),4)})
+
+# Each relocated closure screw must pass through a real pad, not empty space.
+spec = json.loads((ROOT/'reference.json').read_text(encoding='utf-8'))
+fasteners = []
+for x in [-spec['assembly']['base_boss_x'],spec['assembly']['base_boss_x']]:
+    for y in [-spec['assembly']['base_boss_y'],spec['assembly']['base_boss_y']]:
+        base = objects['05_base_cover']
+        hole_clear = not base.ray_cast(Vector((x,y,0)),Vector((0,0,1)),distance=10.21)[0]
+        pad_present = all(base.ray_cast(Vector((x+2.5*math.cos(a),y+2.5*math.sin(a),0)),Vector((0,0,1)),distance=10.21)[0]
+                          for a in [i*math.pi/4 for i in range(8)])
+        fasteners.append({'xy':[x,y],'through_hole_clear':hole_clear,'support_under_screw_head':pad_present})
+
 bounds = {}
 for name in parts:
     obj = objects[name]
@@ -127,9 +190,17 @@ report = {'revision': json.loads((ROOT/'reference.json').read_text(encoding='utf
               'distance': 'https://www.pololu.com/file/0J1194/vl53l0x-vl53l1x-vl53l3cx-vl53l4cd-carrier-dimension-diagram.pdf'},
           'print_ready': False, 'assembly_dimensions_mm': assembly_dimensions, 'part_bounds_mm': bounds,
           'existing_envelope_pairs_checked': checked_pairs, 'existing_envelope_overlaps': checks, 'provisional_proxy_overlaps': proxy_checks,
-          'tof_insertion_path': path_checks,
+          'tof_insertion_path': path_checks, 'controller_insertion_path': controller_path,
+          'servo_insertion_path': servo_path, 'lcd_insertion_path': lcd_path, 'touch_insertion_path': touch_path,
+          'base_fasteners': fasteners,
+          'geometry_gate_passed': all(f['through_hole_clear'] and f['support_under_screw_head'] for f in fasteners) and not checks and not proxy_checks and all(p['overlap_mm3'] < 0.01 for p in path_checks+controller_path+servo_path+lcd_path+touch_path),
           'limits': ['No exact selected plug, screw-head, horn or wire CAD', 'No physical parts measured',
                      'No cable bending, full servo spline geometry, or tool-access certification',
                      'Proxy overlap is a design concern; zero overlap does not prove fit']}
 (OUT/'assembly-audit.json').write_text(json.dumps(report,indent=2)+'\n', encoding='utf-8')
-print(json.dumps(report,indent=2))
+print(json.dumps({key:report[key] for key in ['revision','assembly_dimensions_mm','existing_envelope_pairs_checked','existing_envelope_overlaps','provisional_proxy_overlaps','geometry_gate_passed']},indent=2))
+for name in ['controller_insertion_path','servo_insertion_path','lcd_insertion_path','touch_insertion_path']:
+    print(name, [pose for pose in report[name] if pose['overlap_mm3'] >= 0.01])
+
+if '--strict' in sys.argv and not report['geometry_gate_passed']:
+    raise RuntimeError('Assembly clearance or sampled insertion path failed; see assembly-audit.json')
