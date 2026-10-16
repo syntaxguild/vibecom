@@ -1,0 +1,42 @@
+{
+  "provider": "https://api.maxplus-ai.cc",
+  "model": "gpt-image-2-4k",
+  "size": "3840x2160",
+  "quality": "high",
+  "references": [
+    "mechanical/exports/vibecom-happy.png",
+    "mechanical/exports/vibecom-exploded.png"
+  ],
+  "assets": [
+    {
+      "name": "vibecom-blueprint-16x9-v1",
+      "prompt": "Use case: infographic-diagram. Create ONE finished landscape 16:9 industrial design blueprint presentation drawing of VIBECOM v0.3. The two attached images are reference images of the actual CAD: image 1 is the assembled robot and image 2 is its exploded assembly. Preserve this exact character and mechanical silhouette. A large rounded rectangular ivory pillow head with black continuous face visor, two happy digital eyes, a squat sage green bean body with two silver ultrasonic transducers low on the belly, two small blush pink feet, small pink touch pad on the crown. The head sits directly on the shoulders; NO EXPOSED NECK, no tall neck or separate visible collar. No arms, antennas, mouth, wheels or extra body parts.\nArt direction: a beautiful architect's engineering drawing on deep Prussian blue drafting paper, fine warm white technical ink, subtle cyan construction lines and restrained grid, exquisite crisp line weight hierarchy. Designed as an intentional, readable horizontal sheet rather than a busy collage. Across the left two thirds arrange consistent FRONT, RIGHT and TOP orthographic views at the same scale. Use the right third for one larger exploded isometric sketch based closely on reference image 2. Show six enclosure parts only: rear head cover, front head shell, black visor insert, rounded body shell, base with feet, and concealed horn adapter inside the head. All assembled views MUST agree on the neckless design. Thin leader lines and precise dimension arrows, sparse concise English labels. Large quiet title VIBECOM, subtitle DESKTOP COMPANION / v0.3. Use these exact factual dimensions only, assigned to the correct views: overall width 76 mm, overall height 104.8 mm, approximate overall depth 65 mm; head 76 x 46 x 58 mm; body 62 x 62 x 42 mm; 0.8 mm running seam; 2.4 mm shell wall; display active area 40.8 x 30.6 mm. Do not invent extra measurements. Small label 2-INCH LCD and SG90 / INTERNAL YAW JOINT. Bottom title block: DIMENSIONS IN mm | PROTOTYPE REFERENCE | NOT FOR FABRICATION. The result is a polished illustrative reference sheet, not a verified manufacturing drawing. Keep generous outer margins, no clipped labels, sharp professional drafting, no photorealistic robot in this blueprint image, no fake watermarks."
+    },
+    {
+      "name": "vibecom-presentation-16x9-v1",
+      "prompt": "Use case: product-mockup. Create ONE finished premium landscape 16:9 product design presentation image for VIBECOM v0.3 using the two attached reference images. Image 1 is the exact assembled CAD design and happy screen appearance. Image 2 is the actual exploded CAD assembly for the small secondary 3D model view. Preserve the exact geometry, proportions and colors: large rounded rectangular warm ivory pillow head, continuous black face visor and the same cute warm yellow smiling digital eyes and tiny peach blush accents, squat soft sage green rounded body, two silver circular perforated ultrasonic sensors low on the belly, two tiny blush pink feet, small pink touch marker on top. Head is lowered to sit directly on the body with just a tiny dark running seam; NO EXPOSED NECK or tall visible post. No arms, ears, antennas, mouth, wheels, speakers added to the head, or imaginary components.\nArt direction: beautiful restrained industrial design portfolio sheet, warm ivory and muted sage environment, tactile matte polymers, realistic silver mesh, high quality physically plausible 3D studio rendering with soft broad daylight, subtle contact shadows and fine material details. A large, lovely three-quarter full-color assembled hero robot occupies the center-left and is the focal point, entirely within frame, sitting on a simple warm studio surface. On the right, a smaller crisp exploded 3D model study floats on the same clean backdrop as a secondary design inset, using reference 2 and keeping the same six enclosure components and correct assembly relationships; treat it as a study of the same model, never a different robot. Small neat label 3D MODEL / ASSEMBLY STUDY beneath that inset. Minimal editorial typography in charcoal: VIBECOM at upper left and DESKTOP COMPANION beneath it; small v0.3 / CONCEALED JOINT in the footer. Do not add marketing claims or large paragraphs. Sophisticated spacing, generous margins, a cohesive beautiful visual presentation, friendly desktop companion personality, no cluttered UI cards, no fake software interface, no unrelated props, no watermark. Do not make the model more humanoid or change the selected screen size."
+    }
+  ],
+  "correction": {
+    "name": "vibecom-blueprint-16x9-v2",
+    "reference": "vibecom-blueprint-16x9-v1.png",
+    "prompt": "Edit the attached blueprint image with surgical precision. Preserve the complete image, layout, all robot drawings, linework, blue background, title, labels, dimension arrows, footer and typography. Change ONLY the following two dimension text lines in the central specification column, keeping exactly the same font, color, size and positions:\nUnder HEAD, replace the existing incorrect line '76 (W) x 46 (H) x 58 (D)' with exactly '76 (W) x 58 (H) x 46 (D)'.\nUnder BODY, replace the existing incorrect line '62 (W) x 62 (H) x 42 (D)' with exactly '62 (W) x 42 (H) x 62 (D)'.\nThese correct the swapped height and depth labels. All other pixels and content must remain visually identical. Keep 3840x2160 landscape 16:9. Do not add objects, redraw the robot, alter the neckless design, remove text or change any other dimensions."
+  },
+  "final_assets": [
+    {
+      "file": "vibecom-blueprint-16x9-v2.png",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "7d499c8f61fb38b6424c1d07406704b52545e946176ce2419a195de54c0654c9"
+    },
+    {
+      "file": "vibecom-presentation-16x9-v1.png",
+      "width": 3840,
+      "height": 2160,
+      "sha256": "3c9f11b5ac55bd2a65d59432ffcbb53d8c19e106481392b16c5573cd230a3f37"
+    }
+  ],
+  "drafts_not_delivered": [
+    "vibecom-blueprint-16x9-v1.png"
+  ]
+}
