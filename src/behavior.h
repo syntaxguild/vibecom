@@ -7,6 +7,7 @@
 #include <string.h>
 #include <errno.h>
 #include <array>
+#include "hardware.h"
 
 enum class Mood : uint8_t { Idle, Happy, Angry, Love };
 enum class Personality : uint8_t { Normal, Affectionate, Sleepy, Grumpy };
@@ -47,7 +48,7 @@ inline ActionPose actionPose(Action action, float progress) {
 struct Settings {
   uint32_t sleepMs = 10000;
   float nearCm = 15, farCm = 50;
-  int neckMin = 0, neckCenter = 90, neckMax = 180;
+  int neckMin = Hardware::neckMin, neckCenter = Hardware::neckCenter, neckMax = Hardware::neckMax;
   Personality personality = Personality::Normal;
 };
 
@@ -56,7 +57,7 @@ inline bool validSettings(const Settings &s) {
       std::isfinite(s.nearCm) && std::isfinite(s.farCm) &&
       s.nearCm >= 5 && s.nearCm <= 80 && s.farCm >= s.nearCm + 5 && s.farCm <= 200 &&
       s.neckMin >= 0 && s.neckMin < s.neckCenter &&
-      s.neckCenter < s.neckMax && s.neckMax <= 180 &&
+      s.neckCenter < s.neckMax && s.neckMax <= Hardware::neckLimit &&
       static_cast<uint8_t>(s.personality) <= static_cast<uint8_t>(Personality::Grumpy);
 }
 

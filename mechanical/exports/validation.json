@@ -1,0 +1,41 @@
+{
+  "revision": "v0.1-fit-prototype",
+  "units": "mm",
+  "parts": [
+    {
+      "file": "01_head_rear.stl",
+      "nonmanifold_edges": 0,
+      "volume_mm3": 28100.346
+    },
+    {
+      "file": "02_head_front.stl",
+      "nonmanifold_edges": 0,
+      "volume_mm3": 13713.077
+    },
+    {
+      "file": "03_face_insert.stl",
+      "nonmanifold_edges": 0,
+      "volume_mm3": 2195.239
+    },
+    {
+      "file": "04_body_shell.stl",
+      "nonmanifold_edges": 0,
+      "volume_mm3": 38390.412
+    },
+    {
+      "file": "05_base_cover.stl",
+      "nonmanifold_edges": 0,
+      "volume_mm3": 17508.303
+    },
+    {
+      "file": "06_neck_horn_adapter.stl",
+      "nonmanifold_edges": 0,
+      "volume_mm3": 3698.95
+    }
+  ],
+  "source_sha256": {
+    "reference.json": "013d7285b2ca5c83b42d9c2fb302ba2b18347ece1cf23071166c6fce6f626e58",
+    "build_model.py": "d43602dc3c56ae3e42b3d1e0e8f9e6943fb69276bcee644bc05e5c98b7669160",
+    "../docs/eye-preview.png": "65796e8692c55b3be73b3fe9511ca386b75b828b84dce21cf533368c1e017793"
+  }
+}

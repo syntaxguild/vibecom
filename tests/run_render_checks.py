@@ -15,20 +15,22 @@ if not compiler:
     compiler = str(Path.home() / '.platformio/packages/toolchain-gccmingw32/bin/g++.exe')
 if not Path(compiler).is_file():
     parser.error('Install g++ or pass --compiler. On Windows: pio pkg install --global --tool platformio/toolchain-gccmingw32')
-gfx_files = list((root / '.pio/libdeps/esp32dev').glob('Adafruit GFX Library*/Adafruit_GFX.cpp'))
+gfx_files = [path for profile in ['esp32vibecom', 'esp32dev']
+             for path in (root / '.pio/libdeps' / profile).glob('Adafruit GFX Library*/Adafruit_GFX.cpp')]
 if not gfx_files:
-    parser.error('Run pio run -e esp32dev first to install the pinned GFX dependency.')
+    parser.error('Run pio run first to install the pinned GFX dependency.')
 gfx = next((p for p in gfx_files if '@1.12.1' in str(p)), gfx_files[0])
 output = root / '.pio/render-check'
 output.mkdir(parents=True, exist_ok=True)
 executable = output / ('face-check.exe' if os.name == 'nt' else 'face-check')
 environment = dict(os.environ)
 environment['PATH'] = str(Path(compiler).parent) + os.pathsep + environment.get('PATH', '')
-behavior_executable = output / ('behavior-check.exe' if os.name == 'nt' else 'behavior-check')
-subprocess.run([compiler, '-std=c++11', '-O2', '-Wall', '-Wextra',
-                '-I' + str(root / 'src'), str(root / 'tests/behavior_checks.cpp'),
-                '-o', str(behavior_executable)], check=True, env=environment)
-subprocess.run([str(behavior_executable)], check=True, env=environment)
+for profile, flags in [('legacy', []), ('reference', ['-DVIBECOM_REFERENCE'])]:
+    behavior_executable = output / (f'behavior-{profile}' + ('.exe' if os.name == 'nt' else ''))
+    subprocess.run([compiler, '-std=c++11', '-O2', '-Wall', '-Wextra', *flags,
+                    '-I' + str(root / 'src'), str(root / 'tests/behavior_checks.cpp'),
+                    '-o', str(behavior_executable)], check=True, env=environment)
+    subprocess.run([str(behavior_executable)], check=True, env=environment)
 subprocess.run([compiler, '-std=c++11', '-O2', '-DARDUINO=10800',
                 '-I' + str(root / 'tests/host'), '-I' + str(root / 'src'),
                 '-I' + str(gfx.parent), str(root / 'tests/face_render.cpp'),

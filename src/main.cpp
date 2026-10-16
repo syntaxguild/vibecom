@@ -21,7 +21,7 @@ constexpr int8_t TFT_CS = 27;
 constexpr uint8_t TFT_ROTATION = 1;
 constexpr int16_t FACE_LEFT = 40, FACE_TOP = 40; // Center the face on the landscape 320x240 LCD.
 #else
-constexpr int8_t TFT_CS = -1; // The 7-pin ST7789 module has no exposed CS.
+constexpr int8_t TFT_CS = Hardware::tftCs;
 constexpr uint8_t TFT_ROTATION = 0;
 constexpr int16_t FACE_LEFT = 0, FACE_TOP = 40;
 constexpr uint8_t TFT_SPI_MODE = SPI_MODE0;
@@ -88,7 +88,7 @@ void showSettings() {
 
 void loadSettings() {
   Preferences storage;
-  if (!storage.begin("deskbot", true)) {
+  if (!storage.begin(Hardware::settingsNamespace, true)) {
     Serial.println(F("Settings: using defaults (no saved namespace)."));
     return;
   }
@@ -103,7 +103,7 @@ void loadSettings() {
 void saveSettings() {
   Preferences storage;
   const SavedSettings data = encodeSettings(bot.settings);
-  bool saved = storage.begin("deskbot", false);
+  bool saved = storage.begin(Hardware::settingsNamespace, false);
   if (saved) {
     saved = storage.putBytes("settings", data.data(), sizeof(data)) == sizeof(data);
     storage.end();
@@ -114,7 +114,7 @@ void saveSettings() {
 void consoleCommand(const char *line) {
   if (!strcmp(line, "help")) {
     Serial.println(F("show | profile normal/affectionate/sleepy/grumpy | set KEY VALUE | save | reset"));
-    Serial.println(F("KEY: sleep (3..600 seconds), near/far (cm, 5 cm gap), neck_min/neck_center/neck_max (0..180)."));
+    Serial.printf("KEY: sleep (3..600 seconds), near/far (cm, 5 cm gap), neck_min/neck_center/neck_max (0..%d).\n", Hardware::neckLimit);
     Serial.println(F("Edits apply now; save persists. reset restores defaults in RAM; save to persist reset."));
   } else if (!strcmp(line, "show")) showSettings();
   else if (!strcmp(line, "save")) saveSettings();
@@ -350,6 +350,7 @@ void serviceLog(uint32_t now) {
 void setup() {
   Serial.setTxBufferSize(1024);
   Serial.begin(115200);
+  Serial.printf("Hardware=%s\n", Hardware::name);
   loadSettings();
   neckAngle = bot.settings.neckCenter;
   pinMode(TRIG_PIN, OUTPUT);
@@ -375,7 +376,7 @@ void setup() {
 
   ESP32PWM::allocateTimer(0);
   neck.setPeriodHertz(50);
-  neck.attach(SERVO_PIN, 500, 2500);
+  neck.attach(SERVO_PIN, Hardware::servoPulseMin, Hardware::servoPulseMax);
   neck.write(bot.settings.neckCenter);
   if (!neck.attached()) Serial.println(F("ERROR: servo attachment failed."));
 

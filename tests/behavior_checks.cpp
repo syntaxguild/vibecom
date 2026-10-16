@@ -21,6 +21,21 @@ struct Rig {
 };
 
 int main() {
+  assert(validSettings(Settings{}));
+  assert(Settings{}.neckMax == Hardware::neckMax);
+#ifdef VIBECOM_REFERENCE
+  Settings legacy;
+  legacy.neckMax = 180;
+  Settings untouched;
+  assert(!decodeSettings(encodeSettings(legacy), untouched));
+  assert(untouched.neckMax == 135); // Old NVS cannot bypass the reference servo limit.
+  assert(!editSettings(untouched, "set neck_max 151"));
+  assert(Hardware::tftCs == 27 && Hardware::servoPulseMin == 1000);
+  assert(!strcmp(Hardware::settingsNamespace, "vibecomref"));
+#else
+  assert(Hardware::tftCs == -1 && Hardware::servoPulseMin == 500);
+  assert(!strcmp(Hardware::settingsNamespace, "deskbot"));
+#endif
   Rig r;
   r.run(600);
   assert(r.bot.mood == Mood::Idle && !r.bot.sleeping);
