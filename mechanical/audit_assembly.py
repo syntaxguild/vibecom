@@ -43,7 +43,11 @@ def overlap(first, second):
     bpy.ops.object.modifier_apply(modifier=modifier.name)
     bm = bmesh.new()
     bm.from_mesh(probe.data)
-    volume = abs(bm.calc_volume(signed=True))
+    # Boolean tangency can leave a flat sheet. Signed volume is undefined for
+    # that open surface; reject sheets thinner than 0.00001 mm before measuring.
+    extents = [max((v.co[i] for v in bm.verts), default=0) -
+               min((v.co[i] for v in bm.verts), default=0) for i in range(3)]
+    volume = abs(bm.calc_volume(signed=True)) if min(extents) > 0.00001 else 0
     bm.free()
     bpy.data.objects.remove(probe, do_unlink=True)
     return round(volume, 4)
@@ -110,20 +114,38 @@ for y in [-20, -22, -24, -26]:
     path_checks.append({'y': y, 'z': 26, 'overlap_mm3': overlap(tof, objects['04_body_shell'])})
 tof.location = (0, 0, 0)
 
-# Insert the controller before the servo. Rotate in XY to pass the base opening,
-# then turn it back and move to its rear cradles. Include header reservations.
+# Populate the removable tray outside the enclosure: lower the board into its
+# open-top cradles, then slide the loaded tray through the open rear bay.
 controller_path = []
 controller_parts = [obj for name,obj in objects.items() if name.startswith('REF_DevKitC_')]
-poses = [(0,3,z,40) for z in list(range(-12,25,2))+[25]]
-poses += [(0,3+13*t,25,40*(1-t)) for t in [i/12 for i in range(1,13)]]
-for x,y,z,yaw in poses:
-    matrix = Matrix.Translation(Vector((x,y,z))) @ Matrix.Rotation(math.radians(yaw),4,'Z') @ Matrix.Translation(Vector((0,-16,-25)))
-    volumes = []
+for dz in range(20,-1,-2):
+    volume = 0
     for obj in controller_parts:
-        obj.matrix_world = matrix
-        volumes.append(overlap(obj,objects['04_body_shell']))
-        obj.matrix_world = Matrix.Identity(4)
-    controller_path.append({'center_mm':[x,y,z], 'yaw_deg':yaw,'overlap_mm3':round(sum(volumes),4)})
+        obj.location.z = dz
+        volume += overlap(obj,objects['08_electronics_tray'])
+        obj.location.z = 0
+    controller_path.append({'delta_z':dz,'overlap_mm3':round(volume,4)})
+tray_path = []
+for dy in range(40,-1,-2):
+    volume = 0
+    for obj in controller_parts+[objects['08_electronics_tray']]:
+        obj.location.y = dy
+        volume += overlap(obj,objects['04_body_shell'])
+        volume += overlap(obj,objects['05_base_cover'])
+        obj.location.y = 0
+    tray_path.append({'delta_y':dy,'overlap_mm3':round(volume,4)})
+front_shell_path=[]
+for dy,dz in [(dy,3) for dy in range(-40,1,2)]+[(0,2),(0,1),(0,0)]:
+    shell=objects['04_body_shell'];shell.location=(0,dy,dz)
+    volume=sum(overlap(shell,obj) for obj in controller_parts+[objects['05_base_cover'],objects['08_electronics_tray']])
+    shell.location=(0,0,0)
+    front_shell_path.append({'delta_y':dy,'delta_z':dz,'overlap_mm3':round(volume,4)})
+rear_cover_path = []
+for dy,dz in [(dy,3) for dy in range(32,-1,-2)]+[(0,2),(0,1),(0,0)]:
+    cover=objects['07_body_rear'];cover.location=(0,dy,dz)
+    volume=sum(overlap(cover,obj) for obj in controller_parts+[objects['04_body_shell'],objects['05_base_cover'],objects['08_electronics_tray']])
+    cover.location=(0,0,0)
+    rear_cover_path.append({'delta_y':dy,'delta_z':dz,'overlap_mm3':round(volume,4)})
 servo_path = []
 for delta_z in [-40,-32,-24,-16,-8,0]:
     volumes = []
@@ -134,14 +156,11 @@ for delta_z in [-40,-32,-24,-16,-8,0]:
         obj.location.z = 0
     servo_path.append({'delta_z':delta_z,'overlap_mm3':round(sum(volumes),4)})
 
-# Tilt LCD assembly 45 degrees through the rear closure bosses, straighten
-# inside the head, then move forwards onto the display standoffs.
+# Outboard closure bosses leave a straight rear insertion path for the LCD.
 lcd_parts = [obj for name,obj in objects.items() if name.startswith('REF_Waveshare_17344_')]
 lcd_proxy = box('LCD stack insertion reservation',(47.83,4,34.6),(0,-19.7,75.8))
 lcd_parts.append(lcd_proxy)
-lcd_poses = [(y,45) for y in range(35,-5,-3)]
-lcd_poses += [(-4,angle) for angle in [40,35,30,25,20,15,10,5,0]]
-lcd_poses += [(y,0) for y in [-7,-10,-13,-16.9]]
+lcd_poses = [(y,0) for y in list(range(35,-16,-3))+[-16.9]]
 lcd_path = []
 for y,tilt in lcd_poses:
     matrix = Matrix.Translation(Vector((0,y,75.8))) @ Matrix.Rotation(math.radians(tilt),4,'X') @ Matrix.Translation(Vector((0,16.9,-75.8)))
@@ -191,15 +210,16 @@ report = {'revision': json.loads((ROOT/'reference.json').read_text(encoding='utf
           'print_ready': False, 'assembly_dimensions_mm': assembly_dimensions, 'part_bounds_mm': bounds,
           'existing_envelope_pairs_checked': checked_pairs, 'existing_envelope_overlaps': checks, 'provisional_proxy_overlaps': proxy_checks,
           'tof_insertion_path': path_checks, 'controller_insertion_path': controller_path,
+          'front_shell_path':front_shell_path, 'tray_insertion_path': tray_path, 'rear_cover_path': rear_cover_path,
           'servo_insertion_path': servo_path, 'lcd_insertion_path': lcd_path, 'touch_insertion_path': touch_path,
           'base_fasteners': fasteners,
-          'geometry_gate_passed': all(f['through_hole_clear'] and f['support_under_screw_head'] for f in fasteners) and not checks and not proxy_checks and all(p['overlap_mm3'] < 0.01 for p in path_checks+controller_path+servo_path+lcd_path+touch_path),
+          'geometry_gate_passed': all(f['through_hole_clear'] and f['support_under_screw_head'] for f in fasteners) and not checks and not proxy_checks and all(p['overlap_mm3'] < 0.01 for p in path_checks+controller_path+tray_path+front_shell_path+rear_cover_path+servo_path+lcd_path+touch_path),
           'limits': ['No exact selected plug, screw-head, horn or wire CAD', 'No physical parts measured',
                      'No cable bending, full servo spline geometry, or tool-access certification',
                      'Proxy overlap is a design concern; zero overlap does not prove fit']}
 (OUT/'assembly-audit.json').write_text(json.dumps(report,indent=2)+'\n', encoding='utf-8')
 print(json.dumps({key:report[key] for key in ['revision','assembly_dimensions_mm','existing_envelope_pairs_checked','existing_envelope_overlaps','provisional_proxy_overlaps','geometry_gate_passed']},indent=2))
-for name in ['controller_insertion_path','servo_insertion_path','lcd_insertion_path','touch_insertion_path']:
+for name in ['controller_insertion_path','tray_insertion_path','front_shell_path','rear_cover_path','servo_insertion_path','lcd_insertion_path','touch_insertion_path']:
     print(name, [pose for pose in report[name] if pose['overlap_mm3'] >= 0.01])
 
 if '--strict' in sys.argv and not report['geometry_gate_passed']:

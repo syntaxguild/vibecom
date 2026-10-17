@@ -1,0 +1,67 @@
+{
+  "title": "Vibecom v0.7.0 assembly concept",
+  "provider": "MaxPlus AI",
+  "model": "gpt-image-2-4k",
+  "operation": "CAD-referenced presentation with part-label and legend corrections",
+  "requested_size": "3840x2160",
+  "quality": "high",
+  "task_id": "46ab8692-dea8-4644-bfcd-1adfaa4e20e5",
+  "downloaded_at": "2026-10-17T03:23:12.429426+00:00",
+  "prompt": "Edit only the TOP RIGHT LEGEND of this blueprint. REMOVE ALL EIGHT CIRCULAR NUMBERS beside the eight legend rows. There must be NO circles, NO digits and NO numbers in the top-right legend. Replace the eight numbered legend markers with eight identical tiny cyan square bullets. The legend is now an unnumbered plain list of names: HEAD REAR, HEAD FRONT, FACE INSERT, BODY FRONT, BASE & FEET, HORN ADAPTER, REAR SERVICE COVER, ELECTRONICS TRAY. This removes an erroneous repeated number. Keep ALL numbered callouts attached to the actual exploded diagram unchanged: 01,02,03,04,05,06,07,08. Keep every other part of the image unchanged, including the drawings, dimensions, details, footer, version, colors, composition and 3840x2160 resolution. Only change the top right legend numbered circles to identical tiny cyan square bullets.",
+  "input_sha256": "3b0b271bbcacd1a84d1c1e476f82f3b506fab28a10385ced23b625a1b984f91e",
+  "previous_generation": {
+    "title": "Vibecom v0.7.0 assembly concept",
+    "provider": "MaxPlus AI",
+    "model": "gpt-image-2-4k",
+    "operation": "CAD-referenced presentation with part-label and legend corrections",
+    "requested_size": "3840x2160",
+    "quality": "high",
+    "task_id": "2499fd3f-2d9b-40dd-b4ca-5943b7cd1bd3",
+    "downloaded_at": "2026-10-17T03:20:12.695555+00:00",
+    "prompt": "Edit only one typographic error in this blueprint. In the TOP RIGHT LEGEND, the HORN ADAPTER row currently has a circular number 05. Change that circular number to 06, so the eight legend rows read 01 HEAD REAR, 02 HEAD FRONT, 03 FACE INSERT, 04 BODY FRONT, 05 BASE & FEET, 06 HORN ADAPTER, 07 REAR SERVICE COVER, 08 ELECTRONICS TRAY. Change ONLY the circular legend number beside HORN ADAPTER from 05 to 06. Keep the diagram callout 06 beside the horn adapter, the base callout 05, all illustrations, all dimensions, colors, typography, layout and all other content unchanged. Final image remains exactly 3840x2160, 16:9.",
+    "input_sha256": "112eb7f44d90b9ec760c0eabc16a6c30a6f246806130c4fb51088c3d2e471528",
+    "previous_generation": {
+      "title": "Vibecom v0.7.0 assembly concept",
+      "provider": "MaxPlus AI",
+      "model": "gpt-image-2-4k",
+      "operation": "CAD-referenced image generation followed by part-label correction",
+      "requested_size": "3840x2160",
+      "quality": "high",
+      "task_id": "0d722cf7-ab4f-4a9f-a384-de07436144cb",
+      "created_at_provider_unix": 1792206831,
+      "downloaded_at": "2026-10-17T03:15:51.606Z",
+      "prompt": "Correct this blueprint presentation. First attached image is the generated composition; the next three images are the authoritative CAD renders. Keep the excellent navy 16:9 layout, header and exact overall dimensions 80 mm width, 100.8 mm height and 66 mm depth. Fix erroneous parts, labels and invented details. CRITICAL: 01 HEAD REAR must be an EMPTY shallow rear cap without PCB or mounting ring. 02 HEAD FRONT is the deeper front head shell with display PCB and mounting ring inside, as in CAD rear-service reference. The LCD belongs inside 02, never in the rear cap. 07 REAR SERVICE COVER is the cream curved REAR BODY SHELL visible behind the body in the original CAD exploded reference; label 07 must point at that cream shell, NOT any green PCB. 08 ELECTRONICS TRAY is the black small open frame underneath the upright ESP32 board; add a visible 08 callout pointing to that black frame, NOT the board. Green PCBs are unnumbered purchased reference electronics, never printed covers. Remove the far-right detached green PCB duplicate entirely. Keep exactly eight printed parts in legend and diagram. Legend: 01 HEAD REAR, 02 HEAD FRONT, 03 FACE INSERT, 04 BODY FRONT, 05 BASE & FEET, 06 HORN ADAPTER, 07 REAR SERVICE COVER, 08 ELECTRONICS TRAY. The lower-left REMOVABLE TRAY DETAIL must show ONLY a simple black rectangular OPEN FRAME tray with two upright PCB edge cradles on one end, a small ToF support on the other end, a central rectangular open cable window 18 x 30 mm and four small wire tie slots in side rails. Do NOT show a blue board, blue filled plate, blue servo or a large solid inset as the tray. That detail should resemble black tray in CAD reference. Small thin technical lines; readable labels and ample spacing. Keep front body one small optical aperture. No exposed neck, no invented parts or electronic schematic. Footer AI-ASSISTED ASSEMBLY CONCEPT / NOT A FABRICATION DRAWING. Preserve art-directed professional portfolio look.",
+      "reference_sha256": {
+        "vibecom-blueprint.png": "e54e0ecc69387f6d5ba585cfb2f1d5061663b50a1026c310939ac64c41d9628a",
+        "vibecom-assembled.png": "9cc4a38f5789c3bedc9ca7b03778aac60ba56042e612a1a6803b427ccddd7aa0",
+        "vibecom-exploded.png": "9b3ef031420bc498b0c892d63214e4132edf1026b9e9555bff2f9a5bbb50a63b",
+        "vibecom-service.png": "9bca415f3baa0d58f59e0be4f3c9b585720ab2609b9adc81518febc746343972"
+      },
+      "initial_generation": {
+        "title": "Vibecom v0.7.0 assembly concept",
+        "provider": "MaxPlus AI",
+        "model": "gpt-image-2-4k",
+        "operation": "image edit from actual CAD renders",
+        "requested_size": "3840x2160",
+        "quality": "high",
+        "task_id": "50d6d5e2-b145-4a9a-b3f1-5b89f704b5ee",
+        "created_at_provider_unix": 1792206705,
+        "downloaded_at": "2026-10-17T03:13:13.666Z",
+        "prompt": "Create one refined professional engineering portfolio blueprint sheet, landscape 16:9 at 3840x2160. Product name VIBECOM, version v0.7.0. Use the attached REAL CAD renders as strict geometry references: assembled front, exploded assembly, rear access. This is the same palm-sized cute cream desktop robot with a large rounded rectangular head, continuous black face and two cyan square eyes, tiny rounded torso and two terracotta feet. Concealed joint: NO exposed neck. One small rectangular optical port on chest. Preserve proportions and features from references. Navy blueprint paper, fine restrained grid, crisp white/cyan technical linework, ample negative space, elegant precise typography. Left 40 percent: orthographic front view with overall dimension lines width 80 mm and total height 100.8 mm; a small side view with overall depth 66 mm. Right 60 percent: a clear exploded perspective assembly, substantially follow reference separation. Exactly EIGHT printed parts, no extra invented housings. Labels and legend: 01 HEAD REAR, 02 HEAD FRONT, 03 FACE INSERT, 04 BODY FRONT, 05 BASE & FEET, 06 HORN ADAPTER, 07 REAR SERVICE COVER, 08 ELECTRONICS TRAY. Distinguish optional translucent reference PCBs and servo from printed parts; avoid invented functional electronics. Draw open rear body cover and separate tray clearly so assembly access is obvious. Small detail inset shows removable tray with central cable opening and four wire tie slots. Text callouts only: REMOVABLE TRAY; OPEN REAR ACCESS; CABLE WINDOW 18 x 30 mm. Accurate large main dimensions only; do not invent additional tolerances, mounting patterns or electrical schematic. Avoid overlapping labels or arrows. Header VIBECOM / SERVICEABLE DESKTOP COMPANION. Footer AI-ASSISTED ASSEMBLY CONCEPT / NOT A FABRICATION DRAWING. Technical but tasteful portfolio quality; NOT a toy packaging layout, no watermark, no extra logos. Shape accuracy and readable layout take priority over decoration.",
+        "reference_sha256": {
+          "vibecom-assembled.png": "9cc4a38f5789c3bedc9ca7b03778aac60ba56042e612a1a6803b427ccddd7aa0",
+          "vibecom-exploded.png": "9b3ef031420bc498b0c892d63214e4132edf1026b9e9555bff2f9a5bbb50a63b",
+          "vibecom-service.png": "9bca415f3baa0d58f59e0be4f3c9b585720ab2609b9adc81518febc746343972"
+        },
+        "output_sha256": "e54e0ecc69387f6d5ba585cfb2f1d5061663b50a1026c310939ac64c41d9628a",
+        "scope": "AI-assisted presentation artwork, not a fabrication drawing. Use mechanical/reference.json, STL files and ASSEMBLY.md for prototype geometry."
+      },
+      "output_sha256": "112eb7f44d90b9ec760c0eabc16a6c30a6f246806130c4fb51088c3d2e471528",
+      "scope": "AI-assisted presentation artwork, not a fabrication drawing. Geometry and component placement can be simplified by generation. Use mechanical/reference.json, STL files and ASSEMBLY.md for prototype geometry."
+    },
+    "output_sha256": "3b0b271bbcacd1a84d1c1e476f82f3b506fab28a10385ced23b625a1b984f91e",
+    "scope": "AI-assisted presentation artwork, not a fabrication drawing. Geometry and component placement are simplified. Use mechanical/reference.json, STL files and ASSEMBLY.md for prototype geometry."
+  },
+  "output_sha256": "86d8f756b3f595e27159efacfe938f5c1677c076a1d77b4adfd122eab1e94cbf",
+  "scope": "AI-assisted presentation artwork, not a fabrication drawing. Geometry and component placement are simplified. Use mechanical/reference.json, STL files and ASSEMBLY.md for prototype geometry."
+}

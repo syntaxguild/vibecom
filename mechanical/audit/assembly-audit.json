@@ -1,8 +1,8 @@
 {
-  "revision": "v0.6.1-clearance",
+  "revision": "v0.7.0-serviceable",
   "scope": "Read-only audit of shipped BLEND and declared provisional proxies",
-  "blend_sha256": "16bab65d0d1be93312fd2b24c9498841acba15219dde34eeed55bf90b55460c6",
-  "audit_script_sha256": "613360fa1690ac4579c606516cc3a5ee8e83dfd90cf2e05705ea89262c306dfe",
+  "blend_sha256": "42ce0d04be1a00f97e02b93b9258a0d645c6419f72ee68d9d0626228b8d81237",
+  "audit_script_sha256": "2b7cdd489ba580bceb398b24bd9225122606bf5190418a94d847ea67c72dd12c",
   "manufacturer_sources": {
     "display": "https://files.waveshare.com/upload/6/6d/2inch_LCD_Module_2D_Drawing.pdf",
     "controller": "https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_dimensions.pdf",
@@ -66,7 +66,7 @@
       ],
       [
         -31.0,
-        31.0
+        4.0
       ],
       [
         8.0,
@@ -84,7 +84,7 @@
       ],
       [
         0.0,
-        17.1
+        10.2
       ]
     ],
     "06_neck_horn_adapter": [
@@ -100,576 +100,625 @@
         46.0,
         54.0
       ]
+    ],
+    "07_body_rear": [
+      [
+        -35.0,
+        35.0
+      ],
+      [
+        4.35,
+        31.0
+      ],
+      [
+        8.0,
+        46.0
+      ]
+    ],
+    "08_electronics_tray": [
+      [
+        -16.0,
+        16.0
+      ],
+      [
+        -26.0,
+        20.0
+      ],
+      [
+        8.3,
+        17.1
+      ]
     ]
   },
-  "existing_envelope_pairs_checked": 112,
+  "existing_envelope_pairs_checked": 134,
   "existing_envelope_overlaps": [],
   "provisional_proxy_overlaps": [],
   "tof_insertion_path": [
     {
       "y": -18,
       "z": 2,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "y": -18,
       "z": 8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "y": -18,
       "z": 14,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "y": -18,
       "z": 20,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "y": -18,
       "z": 26,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "y": -20,
       "z": 26,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "y": -22,
       "z": 26,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "y": -24,
       "z": 26,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "y": -26,
       "z": 26,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     }
   ],
   "controller_insertion_path": [
     {
-      "center_mm": [
-        0,
-        3,
-        -12
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_z": 20,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        -10
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_z": 18,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        -8
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_z": 16,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        -6
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_z": 14,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        -4
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_z": 12,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        -2
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_z": 10,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        0
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_z": 8,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        2
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_z": 6,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        4
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_z": 4,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        6
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_z": 2,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        8
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_z": 0,
+      "overlap_mm3": 0
+    }
+  ],
+  "front_shell_path": [
+    {
+      "delta_y": -40,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        10
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_y": -38,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        12
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_y": -36,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        14
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_y": -34,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        16
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_y": -32,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        18
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_y": -30,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        20
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_y": -28,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        22
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_y": -26,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        24
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_y": -24,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        3,
-        25
-      ],
-      "yaw_deg": 40,
-      "overlap_mm3": 0.0
+      "delta_y": -22,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        4.083333333333333,
-        25
-      ],
-      "yaw_deg": 36.666666666666664,
-      "overlap_mm3": 0.0
+      "delta_y": -20,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        5.166666666666666,
-        25
-      ],
-      "yaw_deg": 33.333333333333336,
-      "overlap_mm3": 0.0
+      "delta_y": -18,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        6.25,
-        25
-      ],
-      "yaw_deg": 30.0,
-      "overlap_mm3": 0.0
+      "delta_y": -16,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        7.333333333333333,
-        25
-      ],
-      "yaw_deg": 26.66666666666667,
-      "overlap_mm3": 0.0
+      "delta_y": -14,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        8.416666666666668,
-        25
-      ],
-      "yaw_deg": 23.33333333333333,
-      "overlap_mm3": 0.0002
+      "delta_y": -12,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        9.5,
-        25
-      ],
-      "yaw_deg": 20.0,
-      "overlap_mm3": 0.0
+      "delta_y": -10,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        10.583333333333334,
-        25
-      ],
-      "yaw_deg": 16.666666666666664,
-      "overlap_mm3": 0.0
+      "delta_y": -8,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        11.666666666666666,
-        25
-      ],
-      "yaw_deg": 13.333333333333336,
-      "overlap_mm3": 0.0
+      "delta_y": -6,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        12.75,
-        25
-      ],
-      "yaw_deg": 10.0,
-      "overlap_mm3": 0.0
+      "delta_y": -4,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        13.833333333333334,
-        25
-      ],
-      "yaw_deg": 6.666666666666665,
-      "overlap_mm3": 0.0
+      "delta_y": -2,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        14.916666666666666,
-        25
-      ],
-      "yaw_deg": 3.333333333333335,
-      "overlap_mm3": 0.0
+      "delta_y": 0,
+      "delta_z": 3,
+      "overlap_mm3": 0
     },
     {
-      "center_mm": [
-        0,
-        16.0,
-        25
-      ],
-      "yaw_deg": 0.0,
-      "overlap_mm3": 0.0
+      "delta_y": 0,
+      "delta_z": 2,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 0,
+      "delta_z": 1,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 0,
+      "delta_z": 0,
+      "overlap_mm3": 0
+    }
+  ],
+  "tray_insertion_path": [
+    {
+      "delta_y": 40,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 38,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 36,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 34,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 32,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 30,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 28,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 26,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 24,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 22,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 20,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 18,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 16,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 14,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 12,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 10,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 8,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 6,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 4,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 2,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 0,
+      "overlap_mm3": 0
+    }
+  ],
+  "rear_cover_path": [
+    {
+      "delta_y": 32,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 30,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 28,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 26,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 24,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 22,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 20,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 18,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 16,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 14,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 12,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 10,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 8,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 6,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 4,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 2,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 0,
+      "delta_z": 3,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 0,
+      "delta_z": 2,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 0,
+      "delta_z": 1,
+      "overlap_mm3": 0
+    },
+    {
+      "delta_y": 0,
+      "delta_z": 0,
+      "overlap_mm3": 0
     }
   ],
   "servo_insertion_path": [
     {
       "delta_z": -40,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_z": -32,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_z": -24,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_z": -16,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_z": -8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_z": 0,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     }
   ],
   "lcd_insertion_path": [
     {
       "pcb_center_y": 35,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": 32,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": 29,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": 26,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": 23,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": 20,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": 17,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": 14,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": 11,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": 8,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": 5,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": 2,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": -1,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
-    },
-    {
-      "pcb_center_y": -4,
-      "tilt_deg": 45,
-      "overlap_mm3": 0.0
-    },
-    {
-      "pcb_center_y": -4,
-      "tilt_deg": 40,
-      "overlap_mm3": 0.0
-    },
-    {
-      "pcb_center_y": -4,
-      "tilt_deg": 35,
-      "overlap_mm3": 0.0
-    },
-    {
-      "pcb_center_y": -4,
-      "tilt_deg": 30,
-      "overlap_mm3": 0.0
-    },
-    {
-      "pcb_center_y": -4,
-      "tilt_deg": 25,
-      "overlap_mm3": 0.0
-    },
-    {
-      "pcb_center_y": -4,
-      "tilt_deg": 20,
-      "overlap_mm3": 0.0
-    },
-    {
-      "pcb_center_y": -4,
-      "tilt_deg": 15,
-      "overlap_mm3": 0.0
-    },
-    {
-      "pcb_center_y": -4,
-      "tilt_deg": 10,
-      "overlap_mm3": 0.0
-    },
-    {
-      "pcb_center_y": -4,
-      "tilt_deg": 5,
-      "overlap_mm3": 0.0
+      "tilt_deg": 0,
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": -4,
       "tilt_deg": 0,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": -7,
       "tilt_deg": 0,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": -10,
       "tilt_deg": 0,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": -13,
       "tilt_deg": 0,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "pcb_center_y": -16.9,
       "tilt_deg": 0,
-      "overlap_mm3": 0.0001
+      "overlap_mm3": 0
     }
   ],
   "touch_insertion_path": [
     {
       "delta_y": 30,
       "delta_z": -2.8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 27,
       "delta_z": -2.8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 24,
       "delta_z": -2.8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 21,
       "delta_z": -2.8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 18,
       "delta_z": -2.8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 15,
       "delta_z": -2.8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 12,
       "delta_z": -2.8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 9,
       "delta_z": -2.8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 6,
       "delta_z": -2.8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 3,
       "delta_z": -2.8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 0,
       "delta_z": -2.8,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 0,
       "delta_z": -1.4,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     },
     {
       "delta_y": 0,
       "delta_z": 0,
-      "overlap_mm3": 0.0
+      "overlap_mm3": 0
     }
   ],
   "base_fasteners": [

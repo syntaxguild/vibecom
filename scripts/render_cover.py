@@ -22,7 +22,7 @@ shader.inputs['Emission Strength'].default_value=1
 for text,size,y in [('VIBECOM',0.016,0.020),
                      ('A little presence.\nA lot of personality.',0.0056,-0.001),
                      ('ESP32  /  INTERACTIVE ROBOTICS  /  3D DESIGN',0.0026,-0.036),
-                     ('v0.6.1 / Digital prototype',0.003,-0.047)]:
+                     ('v'+(ROOT/'VERSION').read_text().strip()+' / Digital prototype',0.003,-0.047)]:
     data=bpy.data.curves.new('Cover typography','FONT')
     data.body=text;data.size=size;data.space_line=1.25
     obj=bpy.data.objects.new('Cover typography',data)

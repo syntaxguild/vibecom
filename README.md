@@ -5,7 +5,7 @@
 **A small desktop companion with an expressive face and a personality you can tune.**
 
 [![Build and validation](https://github.com/syntaxguild/vibecom/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/syntaxguild/vibecom/actions/workflows/checks.yml)
-[![Version](https://img.shields.io/badge/version-0.6.1-31594e)](https://github.com/syntaxguild/vibecom/releases/tag/v0.6.1)
+[![Version](https://img.shields.io/badge/version-0.7.0-31594e)](https://github.com/syntaxguild/vibecom/releases/tag/v0.7.0)
 ![Platform](https://img.shields.io/badge/platform-ESP32-333333)
 ![Stage](https://img.shields.io/badge/stage-digital_prototype-c99b6d)
 
@@ -23,9 +23,9 @@ The project brings together **embedded C++, interaction design, a custom I²C si
 
 | Expression | Personality | Firmware targets | Printable parts |
 | :---: | :---: | :---: | :---: |
-| **5** emotional states | **4** configurable profiles | **5** PlatformIO environments | **6** separate STL pieces |
+| **5** emotional states | **4** configurable profiles | **5** PlatformIO environments | **8** separate STL pieces |
 
-**Current milestone: v0.6.1, a digitally validated prototype.** Firmware builds, shared host tests and CAD checks pass. Wokwi startup with the VL53L1X model has been confirmed by the user. Physical assembly, actual display performance and sensor behavior remain to be tested on purchased hardware.
+**Current milestone: v0.7.0, a digitally validated prototype.** Firmware builds, shared host tests and CAD checks pass. Wokwi startup with the VL53L1X model has been confirmed by the user. Physical assembly, actual display performance and sensor behavior remain to be tested on purchased hardware.
 
 ## In motion
 
@@ -46,7 +46,7 @@ The project brings together **embedded C++, interaction design, a custom I²C si
 - **A small rendering footprint.** Two indexed 240 × 160 canvases, RGB565 palettes and a banded SPI transfer buffer use **83,860 bytes** for pixel/palette/transfer storage in the 2-inch profile.
 - **The real driver in simulation.** A custom VL53L1X I²C chip model works with the pinned Pololu driver; a native harness checks both together with the companion's behavior.
 - **Editable hardware design.** Blender source generates STL, GLB, an editable BLEND and studio renders. Artifact fingerprints connect the shipped files to their source.
-- **Evidence beyond a nice render.** CAD checks cover mesh integrity, 112 envelope pairs, sampled insertion paths, head rotation and candidate enclosure screw clearance. [Read the validation scope.](docs/VALIDATION.md)
+- **Evidence beyond a nice render.** CAD checks cover mesh integrity, 134 envelope pairs, sampled insertion paths, head rotation and candidate enclosure screw clearance. [Read the validation scope.](docs/VALIDATION.md)
 
 ## How it works
 
@@ -77,6 +77,10 @@ The screen and movement react to **Idle, Happy, Angry, Love and Sleepy**. Four p
 
 **80 × 66 × 100.8 mm overall.** The Mochi enclosure pairs a wide cream head, a concealed rotating joint, a continuous dark face and small terracotta feet. A compact open optical aperture replaces the earlier twin ultrasonic transducers.
 
+**Designed to open, wire and service.** A removable rear body cover exposes the electronics bay. A separate tray holds the ESP32 cradles and ToF support, with an open cable window and four wire-tie slots. Populate the tray outside the shell, then close the enclosure around it. Outboard head fasteners leave a straight insertion path for the display.
+
+![Rear service access with the covers removed and reference electronics visible](mechanical/exports/vibecom-service.png)
+
 | Component | Reference part |
 | --- | --- |
 | Controller | Espressif ESP32-DevKitC V4 / ESP32-WROOM-32E |
@@ -87,7 +91,13 @@ The screen and movement react to **Idle, Happy, Angry, Love and Sleepy**. Four p
 
 [Browse the 3D files](mechanical/exports/) · [Assembly & fasteners](mechanical/ASSEMBLY.md) · [CAD generation](mechanical/README.md)
 
-The six STLs are **prototype fit-test parts**, not a production-certified kit. Confirm the purchased LCD stack, connectors, horn/spline and wiring before ordering a finished print set. [Fit report](mechanical/audit/README.md) · [Additional digital checks](mechanical/audit/ROBUSTNESS.md)
+The eight STLs are **prototype fit-test parts**, not a production-certified kit. Confirm the purchased LCD stack, connectors, horn/spline and wiring before ordering a finished print set. [Fit report](mechanical/audit/README.md) · [Additional digital checks](mechanical/audit/ROBUSTNESS.md)
+
+### Assembly concept
+
+![Vibecom assembly blueprint based on the v0.7.0 CAD reference renders](docs/assets/vibecom-blueprint.png)
+
+*AI-assisted presentation artwork based on the current CAD renders, generated with `gpt-image-2-4k`. It is not a fabrication drawing; use the [eight STL parts](mechanical/exports/), [reference dimensions](mechanical/reference.json) and [assembly guide](mechanical/ASSEMBLY.md) for the prototype. [Image provenance](docs/assets/vibecom-blueprint.provenance.json).*
 
 ## Quick start
 
@@ -142,7 +152,7 @@ Host checks require a C++ compiler and the dependencies fetched by the firmware 
 | Understand the engineering choices | [Architecture](docs/ARCHITECTURE.md) |
 | Inspect evidence and remaining risks | [Validation](docs/VALIDATION.md) |
 | Print and assemble the prototype | [Mechanical guide](mechanical/README.md) · [Assembly](mechanical/ASSEMBLY.md) |
-| Download a versioned snapshot | [v0.6.1 prerelease](https://github.com/syntaxguild/vibecom/releases/tag/v0.6.1) |
+| Download a versioned snapshot | [v0.7.0 prerelease](https://github.com/syntaxguild/vibecom/releases/tag/v0.7.0) |
 | Explore earlier milestones | [Changelog](CHANGELOG.md) · [Design history](docs/HISTORY.md) |
 
 ## Repository map
@@ -161,4 +171,4 @@ scripts/      Documentation checks, cover rendering and release packaging
 
 Developed in the [syntaxguild](https://github.com/syntaxguild) portfolio. Built with ESP32/Arduino, PlatformIO, Adafruit GFX, ESP32Servo, Pololu's VL53L1X driver, Wokwi and Blender. Hardware reference dimensions are linked in the [mechanical specification](mechanical/reference.json).
 
-The current cover and enclosure images are rendered from the actual editable model. GIFs come from the shared firmware renderer. Earlier AI concept images are documented separately in the [design history](docs/HISTORY.md).
+The cover and enclosure renders come from the actual editable model. GIFs come from the shared firmware renderer. The assembly blueprint is AI-assisted presentation artwork with CAD references and recorded provenance. Earlier AI concepts are documented in the [design history](docs/HISTORY.md).

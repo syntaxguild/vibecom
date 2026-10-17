@@ -30,7 +30,7 @@ Make a small desktop companion readable through its eyes and timing. Distance sh
 
 **Use the real driver in the simulator.** The VL53L1X chip model implements the register interactions used by Pololu 1.3.1. A host adapter connects its C callbacks to the actual library and companion behavior. It is a focused functional model, not an optical simulator.
 
-**Treat the enclosure as an engineering artifact.** A render alone cannot prove assembly. The project keeps the generator, reference dimensions, six printable pieces, editable assembly and reports together. Mesh checks, sampled insertion paths, optical rays and clearance scenarios describe different parts of the evidence.
+**Treat the enclosure as an engineering artifact.** A render alone cannot prove assembly. The project keeps the generator, reference dimensions, eight printable pieces, editable assembly and reports together. Mesh checks, sampled insertion paths, optical rays and clearance scenarios describe different parts of the evidence.
 
 ## Constraints that shaped the result
 

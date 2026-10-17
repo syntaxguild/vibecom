@@ -224,8 +224,8 @@ def hollow_head(name):
 # Service seam and screws move to the back, leaving the character's face clean.
 rear = hollow_head('01_head_rear')
 boolean(rear, rounded('Remove front half', (200, 112, 200), (0, -44, hz), 0.01))
-for x in [-31, 31]:
-    for z in [hz-20, hz+20]:
+for x in [-A['head_closure_x'], A['head_closure_x']]:
+    for z in [hz-A['head_closure_z_offset'], hz+A['head_closure_z_offset']]:
         boolean(rear, cylinder('Rear screw clearance', E['closure_hole_diameter']/2,
                                26, (x, 18, z), 'Y'))
 finish(rear, ivory)
@@ -253,9 +253,9 @@ boolean(front, cylinder('Cable clearance in mounting bridges', E['neck_bore']/2+
 # Touch board sits under a 1 mm plastic roof; no mechanical button is required.
 boolean(front, rounded('Touch roof relief', (32, 24, 5),
                        (0, 0, hz+hh/2-E['touch_roof']-2.5), 3, 'XY'))
-for x in [-31, 31]:
-    for z in [hz-20, hz+20]:
-        boolean(front, cylinder('Hidden closure boss', 4, 8, (x, 8, z), 'Y'), 'UNION')
+for x in [-A['head_closure_x'], A['head_closure_x']]:
+    for z in [hz-A['head_closure_z_offset'], hz+A['head_closure_z_offset']]:
+        boolean(front, cylinder('Hidden closure boss', 3.3, 8, (x, 8, z), 'Y'), 'UNION')
         boolean(front, cylinder('Hidden pilot', E['closure_pilot_diameter']/2,
                                 12, (x, 8, z), 'Y'))
 lcd_pitch = SPEC['components']['display']['mount_pitch']
@@ -311,7 +311,34 @@ for x in [-A['base_boss_x'], A['base_boss_x']]:
         boolean(body, cylinder('Base locating pad clearance', 3.3, 4, (x,y,8.5)))
         boolean(body, cylinder('Base pilot', E['closure_pilot_diameter']/2, 12, (x, y, 13)))
 boolean(body, rounded('Open base', (200, 200, 200), (0, 0, -92), 0.01, 'XY'))
+# A removable rear shell opens the electronics bay instead of forcing boards
+# diagonally through the base. Two rear screws and four base screws close it.
+split = A['body_service_split_y']
+gap = A['body_service_gap']
+for x in [-A['body_service_mount_x'], A['body_service_mount_x']]:
+    boolean(body, cylinder('Front service screw boss',3.3,6,
+                           (x,split-3,A['body_service_mount_z']),'Y'),'UNION')
+    boolean(body, cylinder('Front service pilot',0.9,10,
+                           (x,split-3,A['body_service_mount_z']),'Y'))
+body_rear = body.copy()
+body_rear.data = body.data.copy()
+body_rear.name = '07_body_rear'
+bpy.context.collection.objects.link(body_rear)
+boolean(body,rounded('Open rear service bay',(200,200,200),(0,split+100,bz),0.01))
+boolean(body_rear,rounded('Keep rear service cover',(200,200,200),
+                          (0,split+gap-100,bz),0.01))
+for x in [-A['body_service_mount_x'], A['body_service_mount_x']]:
+    post = cylinder('Rear service screw guide',3.3,24,
+                    (x,split+gap+12,A['body_service_mount_z']),'Y')
+    boolean(post,softbox('Keep guide within exterior',(bw-0.2,bd-0.2,bh-0.2),
+                         (0,0,bz),br-0.1),'INTERSECT')
+    boolean(body_rear,post,'UNION')
+    boolean(body_rear,cylinder('Rear service clearance',1.2,60,
+                               (x,20,A['body_service_mount_z']),'Y'))
+    boolean(body_rear,cylinder('Rear service screw head entry',2.2,30,
+                               (x,38.5,A['body_service_mount_z']),'Y'))
 finish(body, ivory)
+finish(body_rear, ivory)
 base = softbox('05_base_cover', (bw, bd, bh), (0, 0, bz), br)
 boolean(base, rounded('Keep base cap only', (200, 200, 200), (0, 0, 108), 0.01, 'XY'))
 for x in [-13, 13]:
@@ -330,21 +357,27 @@ for x in [-A['base_boss_x'], A['base_boss_x']]:
     for y in [-A['base_boss_y'], A['base_boss_y']]:
         boolean(base, cylinder('Base screw clearance', E['closure_hole_diameter']/2,
                                18, (x, y, 5)))
-for x in [-12, 12]:
-    cradle = rounded('Upright PCB cradle', (8, 8, 6), (x, 16, 10), 1, 'XY')
-    for boss_x in [-A['base_boss_x'], A['base_boss_x']]:
-        boolean(cradle, cylinder('Rear closure clearance', 3.8, 10,
-                                 (boss_x, A['base_boss_y'], 14.25)))
-    boolean(base, cradle, 'UNION')
-    boolean(base, rounded('PCB edge slot', (10, 2.4, 4), (x, 16, 12), 0.5, 'XY'))
-# Reserve room for the lower pin header instead of burying it in the cradles.
-boolean(base, rounded('Lower header and socket clearance', (49.06, 9.1, 3.94),
-                       (0, 10.85, 12.3), 0.1))
-# A short L-shaped support holds the ToF PCB vertically when the base is fitted.
-boolean(base, rounded('ToF support upright', (8, 7, 9), (0, -16.5, 11.5), 0.5, 'XY'), 'UNION')
-boolean(base, rounded('ToF support ledge', (10, 11, 2.4),
-                       (0, -21, tof_z-ph/2-1.2), 0.4, 'XY'), 'UNION')
-finish(base, rubber)
+# The base carries the cosmetic feet; electronics mount on a separate frame.
+for x in [-A['tray_mount_x'],A['tray_mount_x']]:
+    boolean(base,cylinder('Tray mounting pilot',0.9,3.5,(x,A['tray_mount_y'],6.75)))
+finish(base,rubber)
+tray = rounded('08_electronics_tray',(30,41,2),(0,-1,9.3),2,'XY')
+boolean(tray,rounded('Open cable routing window',(18,30,6),(0,-1.5,9.3),1,'XY'))
+for x in [-12,12]:
+    boolean(tray,rounded('Upright PCB cradle',(8,8,4.7),(x,16,10.65),1,'XY'),'UNION')
+    boolean(tray,rounded('PCB edge slot',(10,2.4,4),(x,16,12),0.5,'XY'))
+boolean(tray,rounded('Lower header and socket clearance',(49.06,9.1,3.94),
+                     (0,10.85,12.3),0.1))
+boolean(tray,rounded('ToF support upright',(8,7,8.2),(0,-16.5,12.4),0.5,'XY'),'UNION')
+boolean(tray,rounded('ToF support ledge',(10,10.5,2.4),
+                     (0,-20.75,tof_z-ph/2-1.2),0.4,'XY'),'UNION')
+for x in [-12,12]:
+    for y in [4,10]:
+        boolean(tray,rounded('Wire tie slot',(2,4,6),(x,y,9.3),0.5,'XY'))
+for x in [-A['tray_mount_x'],A['tray_mount_x']]:
+    boolean(tray,cylinder('Tray screw clearance',1.2,8,(x,A['tray_mount_y'],10)))
+finish(tray,graphite)
+
 # Preserve the exported filename; this part is now concealed in the head.
 neck = cylinder('06_neck_horn_adapter', 9, 8, (0, -4, 50))
 boolean(neck, cylinder('Adapter hollow', E['neck_bore']/2, 12, (0, -4, 50)))
@@ -435,7 +468,8 @@ for obj in parts:
 # Check mounts and mating parts at construction scale (mm), before parent scaling.
 report['fit'] = []
 tof_pcb = next(obj for obj in guides if obj.name == 'REF_Pololu_3415_PCB')
-for first, second in [(body, base), (body, tof_pcb), (base, tof_pcb)]:
+for first, second in [(body,base),(body,body_rear),(body,tray),(body_rear,base),
+                      (body_rear,tray),(base,tray),(body,tof_pcb),(tray,tof_pcb)]:
     probe = first.copy()
     probe.data = first.data.copy()
     bpy.context.collection.objects.link(probe)
@@ -559,6 +593,21 @@ front.location.y -= 12
 insert.location.y -= 34
 screen.location.y -= 34
 base.location.z -= 20
+body.location.x -= 14
+body_rear.location.y += 34
+body_rear.location.x += 24
+tray.location.x += 45
+tray.location.z -= 7
+for obj in guides:
+    if 'DevKitC' in obj.name or 'Pololu' in obj.name:
+        obj.location.x += 45
+        obj.location.z -= 7
+    elif 'SG90' in obj.name:
+        obj.location.x -= 14
+for obj in visual:
+    if obj.name.startswith('ToF'):
+        obj.location.x += 45
+        obj.location.z -= 7
 neck.location.z += 10
 for obj in guides:
     obj.hide_render = False
@@ -571,7 +620,18 @@ for obj, location in original.items():
 assembly.location.z = 0
 for obj in guides:
     obj.hide_render = True
+# Rear access view: remove both service covers and show the real component
+# envelopes and separate tray. These are the same meshes as the print exports.
+rear.hide_render=True
+body_rear.hide_render=True
+for obj in guides:
+    obj.hide_render=False
+camera.location=(0.16,0.34,0.17)
+camera_data.ortho_scale=0.175
+aim(camera,(0,0,0.053))
+scene.render.filepath=str(OUT/'vibecom-service.png')
+bpy.ops.render.render(write_still=True)
 report['source_sha256'] = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
                             for name in ['reference.json', 'build_model.py', '../docs/eye-preview.png']}
 (OUT / 'validation.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
-print('VIBECOM: exported 6 checked STL parts, GLB, editable BLEND and 3 previews.')
+print(f'VIBECOM: exported {len(parts)} checked STL parts, GLB, editable BLEND and 4 previews.')

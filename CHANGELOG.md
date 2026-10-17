@@ -2,6 +2,15 @@
 
 Project versions use `MAJOR.MINOR.PATCH`. `VERSION` records the current release family; `mechanical/reference.json` adds a CAD revision descriptor. The current release is marked **prerelease** while physical assembly remains unverified.
 
+## 0.7.0 — 2026-10-17
+
+- Split the body into a front shell and a removable rear service cover.
+- Separated the electronics tray from the cosmetic base; added tray screws and wire-tie slots.
+- Moved head closure bosses outboard so the LCD can enter straight from the rear.
+- Added service-access renders and updated assembly-path, fastener and clearance evidence for eight printed parts.
+- Cleaned local editor state out of Git tracking and kept release packages/cache files outside the source tree.
+- Added a new assembly-blueprint presentation based on the current model; the actual CAD remains the source of geometry.
+
 ## 0.6.1 — 2026-10-16
 
 ### Hardware and validation

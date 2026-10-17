@@ -1,5 +1,5 @@
 {
-  "revision": "v0.6.1-clearance",
+  "revision": "v0.7.0-serviceable",
   "units": "mm",
   "parts": [
     {
@@ -10,7 +10,7 @@
     {
       "file": "02_head_front.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 25920.885
+      "volume_mm3": 25391.065
     },
     {
       "file": "03_face_insert.stl",
@@ -20,12 +20,22 @@
     {
       "file": "04_body_shell.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 27151.287
+      "volume_mm3": 15173.76
+    },
+    {
+      "file": "07_body_rear.stl",
+      "nonmanifold_edges": 0,
+      "volume_mm3": 12968.742
     },
     {
       "file": "05_base_cover.stl",
       "nonmanifold_edges": 0,
-      "volume_mm3": 15475.793
+      "volume_mm3": 14398.45
+    },
+    {
+      "file": "08_electronics_tray.stl",
+      "nonmanifold_edges": 0,
+      "volume_mm3": 2041.428
     },
     {
       "file": "06_neck_horn_adapter.stl",
@@ -50,13 +60,48 @@
     {
       "parts": [
         "04_body_shell",
-        "REF_Pololu_3415_PCB"
+        "07_body_rear"
+      ],
+      "overlap_mm3": 0.0
+    },
+    {
+      "parts": [
+        "04_body_shell",
+        "08_electronics_tray"
+      ],
+      "overlap_mm3": 0.0
+    },
+    {
+      "parts": [
+        "07_body_rear",
+        "05_base_cover"
+      ],
+      "overlap_mm3": 0.0
+    },
+    {
+      "parts": [
+        "07_body_rear",
+        "08_electronics_tray"
       ],
       "overlap_mm3": 0.0
     },
     {
       "parts": [
         "05_base_cover",
+        "08_electronics_tray"
+      ],
+      "overlap_mm3": 0.0
+    },
+    {
+      "parts": [
+        "04_body_shell",
+        "REF_Pololu_3415_PCB"
+      ],
+      "overlap_mm3": 0.0
+    },
+    {
+      "parts": [
+        "08_electronics_tray",
         "REF_Pololu_3415_PCB"
       ],
       "overlap_mm3": 0.0
@@ -70,8 +115,8 @@
     ]
   },
   "source_sha256": {
-    "reference.json": "82374ceba277cfd459ff69e3035137dab4f41e633dab5f76e4872b46b25a40ab",
-    "build_model.py": "c3b0a35e59a3faa5670d340ece3481743438c1f8425bc15237799b3845230414",
+    "reference.json": "3ce8ee4b93b245192b0567be0fb0a4d7267dd4c587bf65ecbf6d52e41ceb103e",
+    "build_model.py": "eb7aa91810c23ee6559d853424a1e7b0594a8fdaee6521739d66deed3134535b",
     "../docs/eye-preview.png": "45b6115c2a1331e801bbfe7b9da8396837f518dd186d90c37bcdd3d8a7e50a09"
   }
 }

@@ -12,7 +12,7 @@ pio run -e esp32dev -e esp32vibecom13 -e esp32vibecom_sonar -e esp32vibecom -e e
 
 | Environment | จอ | ใช้กับ |
 | --- | --- | --- |
-| `esp32vibecom` | Waveshare 17344 จอ IPS 2 นิ้ว แนวนอน + SG90 Digital | เครื่องจริง โมเดล v0.6 / VL53L1X |
+| `esp32vibecom` | Waveshare 17344 จอ IPS 2 นิ้ว แนวนอน + SG90 Digital | เครื่องจริง โมเดล v0.7.0 / VL53L1X |
 | `esp32vibecom_sonar` | Waveshare 17344 จอ 2 นิ้ว + SG90 Digital | เครื่องจริง โมเดล v0.2–v0.3 / HC-SR04 เดิม |
 | `esp32vibecom13` | Waveshare 15867 จอ 1.3 นิ้ว + SG90 Digital | เครื่องจริง โมเดล v0.1 เดิม |
 | `esp32dev` | ST7789 240×240 แบบ 7 ขา + เซอร์โวเดิม | เครื่องจริง แบบเดิม |

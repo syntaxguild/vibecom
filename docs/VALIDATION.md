@@ -2,7 +2,7 @@
 
 [Overview](../README.md) · [Run the checks](DEVELOPMENT.md) · [CAD audit](../mechanical/audit/README.md)
 
-Vibecom v0.6.1 is a **digital prototype with functional firmware and simulation**. The table records the scope of evidence; it is not a manufacturing certificate or a probability of physical assembly success.
+Vibecom v0.7.0 is a **digital prototype with functional firmware and simulation**. The table records the scope of evidence; it is not a manufacturing certificate or a probability of physical assembly success.
 
 | Area | Evidence | Status / boundary |
 | --- | --- | --- |
@@ -11,8 +11,8 @@ Vibecom v0.6.1 is a **digital prototype with functional firmware and simulation*
 | Rendering | Pixel, palette, band, transition and buffer-boundary checks | Automated; host rendering, not physical FPS |
 | Driver and custom chip | Actual Pololu 1.3.1 driver connected to C chip callbacks | Automated; functional I²C subset |
 | Wokwi VS Code | User confirmed new VL53L1X diagram loads and runs | User-reported runtime confirmation |
-| CAD integrity | Six closed, connected positive-volume STL meshes; GLB units; source hashes | Automated artifact checks |
-| Assembly geometry | 112 envelope pairs, connector reservations and sampled insertion paths | Digital checks pass within the declared assumptions |
+| CAD integrity | Eight closed, connected positive-volume STL meshes; GLB units; source hashes | Automated artifact checks |
+| Assembly geometry | 134 envelope pairs, connector reservations and sampled insertion paths | Digital checks pass within the declared assumptions |
 | Head motion | 26 sampled yaw/vertical-offset scenarios | Shell/body clearance passes; no physical servo or wire test |
 | Position sensitivity | Axis shifts of selected device envelopes by ±0.2 / ±0.4 mm | Declared scenarios; ToF front-stop contact is expected |
 | Enclosure screws | Candidate closure heads, shafts and sampled base-head entry paths | Tested candidate dimensions only; not every M2 screw |

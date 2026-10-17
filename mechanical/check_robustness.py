@@ -24,7 +24,7 @@ def cylinder(name,radius,depth,center,axis='Z'):
 
 
 pairs=[('REF_DevKitC_PCB','04_body_shell'),
-       ('REF_DevKitC_header_12.3','05_base_cover'),
+       ('REF_DevKitC_header_12.3','08_electronics_tray'),
        ('REF_Pololu_3415_PCB','04_body_shell'),
        ('REF_SG90_case','04_body_shell')]
 tolerance=[]
@@ -47,7 +47,7 @@ for yaw in range(-60,61,10):
         volume=0
         for name in ['01_head_rear','02_head_front','03_face_insert']:
             obj=objects[name];obj.matrix_world=m
-            volume+=overlap(obj,objects['04_body_shell'])
+            volume+=overlap(obj,objects['04_body_shell'])+overlap(obj,objects['07_body_rear'])
             obj.matrix_world=Matrix.Identity(4)
         motion.append({'yaw_deg':yaw,'head_downward_mm':downward,'overlap_mm3':round(volume,4)})
 
@@ -70,19 +70,43 @@ for x in [-spec['assembly']['base_boss_x'],spec['assembly']['base_boss_x']]:
         bpy.data.objects.remove(shaft,do_unlink=True)
         closures.append({'kind':'base','xy':[x,y],'candidate_head_final_overlap_mm3':final,
                          'candidate_shaft_electronics_overlap_mm3':round(electrical,4),'head_insertion':entry})
-for x in [-31,31]:
-    for z in [spec['enclosure']['head_center'][2]-20,spec['enclosure']['head_center'][2]+20]:
+for x in [-spec['assembly']['head_closure_x'],spec['assembly']['head_closure_x']]:
+    for z in [spec['enclosure']['head_center'][2]-spec['assembly']['head_closure_z_offset'],spec['enclosure']['head_center'][2]+spec['assembly']['head_closure_z_offset']]:
         shaft=cylinder('Candidate M2x16 shaft',1,16,(x,15,z),'Y')
         electrical=sum(overlap(shaft,obj) for obj in electronics)
         bpy.data.objects.remove(shaft,do_unlink=True)
         closures.append({'kind':'head_rear','xz':[x,z],'candidate_shaft_electronics_overlap_mm3':round(electrical,4)})
+
+# New removable tray and rear-body closures: test the declared candidate shafts
+# against electronics and the candidate heads against non-threaded printed parts.
+for x in [-spec['assembly']['tray_mount_x'],spec['assembly']['tray_mount_x']]:
+    head=cylinder('Tray head reservation',2,2,(x,spec['assembly']['tray_mount_y'],11.3))
+    head_overlap=sum(overlap(head,objects[name]) for name in ['04_body_shell','07_body_rear','08_electronics_tray'])
+    electrical=sum(overlap(head,obj) for obj in electronics)
+    bpy.data.objects.remove(head,do_unlink=True)
+    shaft=cylinder('Tray M2x5 shaft',1,5,(x,spec['assembly']['tray_mount_y'],7.8))
+    electrical+=sum(overlap(shaft,obj) for obj in electronics)
+    bpy.data.objects.remove(shaft,do_unlink=True)
+    closures.append({'kind':'tray','xy':[x,spec['assembly']['tray_mount_y']],
+                     'candidate_head_final_overlap_mm3':round(head_overlap,4),
+                     'candidate_shaft_electronics_overlap_mm3':round(electrical,4)})
+for x in [-spec['assembly']['body_service_mount_x'],spec['assembly']['body_service_mount_x']]:
+    z=spec['assembly']['body_service_mount_z']
+    head=cylinder('Rear service head reservation',2,2,(x,24.5,z),'Y')
+    head_overlap=overlap(head,objects['07_body_rear'])
+    bpy.data.objects.remove(head,do_unlink=True)
+    shaft=cylinder('Rear service M2x25 shaft',1,25,(x,11,z),'Y')
+    electrical=sum(overlap(shaft,obj) for obj in electronics)
+    bpy.data.objects.remove(shaft,do_unlink=True)
+    closures.append({'kind':'body_rear','xz':[x,z],'candidate_head_final_overlap_mm3':head_overlap,
+                     'candidate_shaft_electronics_overlap_mm3':round(electrical,4)})
 
 report={'revision':spec['revision'],'blend_sha256':hashlib.sha256((ROOT/'exports/vibecom.blend').read_bytes()).hexdigest(),
         'script_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         'audit_loader_sha256':hashlib.sha256((ROOT/'audit_assembly.py').read_bytes()).hexdigest(),
         'relative_position_stress':tolerance,'head_motion':motion,'closure_screws':closures,
         'limits':['Axis shifts are sensitivity scenarios, not measured printer error distributions',
-                  'Only eight enclosure closure screws; LCD/servo/adapter nuts and actual horn remain unmodelled',
+                  'Twelve candidate closure positions; LCD/servo/adapter nuts and actual horn remain unmodelled',
                   'No wire, torque, wear, heat or touch sensitivity testing',
                   'Passing test counts are not a probability of successful assembly']}
 # Pushing the ToF PCB forwards beyond its front seat is a deliberate hard-stop
@@ -98,7 +122,7 @@ report['digital_checks_passed'] = (
 (ROOT/'audit/robustness.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 print('POSITION STRESS FAILURES',[(r['part'],r['shift_mm'],r['overlap_mm3']) for r in tolerance if r['overlap_mm3']>=.01])
 print('HEAD MOTION FAILURES',[r for r in motion if r['overlap_mm3']>=.01])
-print('CLOSURES',json.dumps(closures,indent=2))
+print('CLOSURES',len(closures),'candidate closure positions checked; details in robustness.json')
 
 if '--strict' in sys.argv and not report['digital_checks_passed']:
     raise RuntimeError('Additional digital checks failed; inspect robustness.json')

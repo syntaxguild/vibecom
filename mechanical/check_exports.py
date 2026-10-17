@@ -11,7 +11,8 @@ out = root / 'exports'
 report = json.loads((out / 'validation.json').read_text(encoding='utf-8'))
 for name, expected in report['source_sha256'].items():
     assert hashlib.sha256((root / name).read_bytes()).hexdigest() == expected, f'Regenerate CAD: {name}'
-assert len(report['parts']) == 6
+spec = json.loads((root/'reference.json').read_text(encoding='utf-8'))
+assert {p['file'] for p in report['parts']} == set(spec['print_parts'])
 bounds = {}
 for part in report['parts']:
     path = out / part['file']
@@ -58,7 +59,7 @@ assert abs(bounds['06_neck_horn_adapter'][1]-joint['adapter_flange_top_mm']) < 0
 assert head_bottom < joint['adapter_flange_top_mm'] < joint['internal_mount_top_mm']
 assert joint['internal_mount_top_mm'] < joint['display_pcb_bottom_mm'], 'Joint/display clearance'
 print(f'PASS: {gap:.1f} mm head/torso seam and recessed adapter below display PCB')
-assert len(report['fit']) == 3 and all(pair['overlap_mm3'] < 0.01 for pair in report['fit'])
+assert len(report['fit']) == 8 and all(pair['overlap_mm3'] < 0.01 for pair in report['fit'])
 assert report['tof_aperture']['clear_reference_rays'] == 36
 assert report['tof_aperture']['aperture_mm'] == spec['enclosure']['tof_aperture']
 print('PASS: generated mount intersection and ToF aperture reports (reference geometry only)')
@@ -70,7 +71,7 @@ assert json_type == b'JSON'
 gltf = json.loads(glb[20:20+json_length])
 assert any(all(abs(value - 0.001) < 1e-8 for value in node.get('scale', [1, 1, 1]))
            for node in gltf['nodes']), 'GLB must convert millimeters to meters'
-for name in ['vibecom.blend', 'vibecom-assembled.png', 'vibecom-happy.png', 'vibecom-exploded.png']:
+for name in ['vibecom.blend', 'vibecom-assembled.png', 'vibecom-happy.png', 'vibecom-exploded.png', 'vibecom-service.png']:
     assert (out / name).stat().st_size > 1000, name
 print('PASS: source fingerprints, GLB container/scale, editable BLEND and rendered previews')
 

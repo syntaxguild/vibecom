@@ -1,5 +1,5 @@
 {
-  "revision": "v0.6.1-clearance",
+  "revision": "v0.7.0-serviceable",
   "units": "mm",
   "status": "Dimensioned prototype; physical fit, fasteners, horn and cable travel need validation",
   "enclosure": {
@@ -126,6 +126,24 @@
     "servo_mount_status": "Adjustable slots for provisional tab-hole positions; measure actual SG90, horn and shaft stack before final printing",
     "controller_headers": "Reserve 8.5 mm depth towards body interior; selected plugs and wire bend radius still require physical validation",
     "lcd_stack": "4 mm backlight envelope at Y=-19.7; PCB at Y=-16.9; exact optical stack and AA horizontal offset require purchased module measurement",
-    "wiring": "LCD PH connector faces interior; body PCB headers face interior; ToF solder wires exit towards body interior. Loose service loops through concealed side joint port; no certified bend-radius model."
-  }
+    "wiring": "LCD PH connector faces interior; body PCB headers face interior; ToF solder wires exit towards body interior. Loose service loops through concealed side joint port; no certified bend-radius model.",
+    "body_service_split_y": 4,
+    "body_service_gap": 0.35,
+    "body_service_mount_x": 28,
+    "body_service_mount_z": 38,
+    "head_closure_x": 34,
+    "head_closure_z_offset": 18,
+    "tray_mount_x": 12,
+    "tray_mount_y": -14
+  },
+  "print_parts": [
+    "01_head_rear.stl",
+    "02_head_front.stl",
+    "03_face_insert.stl",
+    "04_body_shell.stl",
+    "05_base_cover.stl",
+    "06_neck_horn_adapter.stl",
+    "07_body_rear.stl",
+    "08_electronics_tray.stl"
+  ]
 }
